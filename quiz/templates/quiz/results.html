@@ -1,0 +1,321 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Examination Results{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--border-color);">
+    <!-- Premium Banner Header -->
+    <div style="background: {% if attempt.passed %}linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.02)){% else %}linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.02)){% endif %}; padding: 40px 30px; text-align: center; border-bottom: 1px solid {% if attempt.passed %}rgba(16,185,129,0.15){% else %}rgba(239,68,68,0.15){% endif %}; position: relative;">
+        
+        <h2 style="font-size: 26px; font-weight: 800; color: var(--text-white); margin-bottom: 5px;">
+            Examination <span style="color: var(--primary-orange);">Report</span>
+        </h2>
+        
+        <div style="margin: 20px 0;">
+            <div style="font-size: 64px; font-weight: 900; line-height: 1; letter-spacing: -1.5px; color: {% if attempt.passed %}var(--success-green){% else %}var(--danger-red){% endif %}; text-shadow: 0 4px 20px {% if attempt.passed %}rgba(16,185,129,0.2){% else %}rgba(239,68,68,0.2){% endif %};">
+                {{ attempt.percentage }}<span style="font-size: 32px; font-weight: 700;">%</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; color: var(--text-muted); margin-top: 5px;">
+                Final Score
+            </div>
+        </div>
+
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 50px; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; background: {% if attempt.passed %}var(--success-green){% else %}var(--danger-red){% endif %}; color: white; box-shadow: 0 8px 25px {% if attempt.passed %}rgba(16,185,129,0.35){% else %}rgba(239,68,68,0.35){% endif %};">
+            {% if attempt.passed %}
+            <i class="fa-solid fa-trophy"></i> Passed Successfully
+            {% else %}
+            <i class="fa-solid fa-circle-xmark"></i> Not Passed
+            {% endif %}
+        </div>
+        
+        <p style="color: var(--text-muted); margin-top: 25px; font-size: 15px; font-weight: 500; max-width: 450px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            {% if attempt.passed %}
+            Excellent work! You reached the passing criteria of <strong>{{ attempt.quiz.passing_score }}%</strong>. Keep up the great progress!
+            {% else %}
+            You scored {{ attempt.percentage }}%, but the passing criteria is <strong>{{ attempt.quiz.passing_score }}%</strong>. Review your answers below and try again!
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Stats Section -->
+    <div style="padding: 30px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+            <div style="background: var(--bg-surface); padding: 18px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,107,0,0.08); color: var(--primary-orange); display: grid; place-items: center; font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-book-open"></i></div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Exam Type</div>
+                    <div style="font-weight: 800; color: var(--text-white); font-size: 15px; line-height: 1.2; margin-top: 2px;">{{ attempt.quiz.title|truncatechars:25 }}</div>
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-surface); padding: 18px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,107,0,0.08); color: var(--primary-orange); display: grid; place-items: center; font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-bullseye"></i></div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Correct Choices</div>
+                    <div style="font-weight: 800; color: var(--text-white); font-size: 16px; margin-top: 2px;">{{ attempt.correct_answers }} <span style="color: var(--text-muted); font-size: 13px; font-weight: 600;">/ {{ attempt.total_questions }}</span></div>
+                </div>
+            </div>
+
+            <div style="background: var(--bg-surface); padding: 18px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,107,0,0.08); color: var(--primary-orange); display: grid; place-items: center; font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-star"></i></div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Score Earned</div>
+                    <div style="font-weight: 800; color: var(--text-white); font-size: 16px; margin-top: 2px;">{{ attempt.score }} <span style="font-size: 12px; color: var(--text-muted);">Pts</span></div>
+                </div>
+            </div>
+
+            <div style="background: var(--bg-surface); padding: 18px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,107,0,0.08); color: var(--primary-orange); display: grid; place-items: center; font-size: 20px; flex-shrink: 0;"><i class="fa-solid fa-calendar-check"></i></div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Completed On</div>
+                    <div style="font-weight: 800; color: var(--text-white); font-size: 14px; margin-top: 2px;">{{ attempt.completed_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top CTAs -->
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
+            <a href="{% url 'quiz:play' attempt.quiz.id %}" class="btn btn-primary" id="btn-retry" style="padding: 12px 28px; font-size: 15px; border-radius: 12px; font-weight: 700; box-shadow: 0 6px 15px rgba(255,107,0,0.25); transition: transform 0.2s;"><i class="fa-solid fa-rotate-right"></i> Try Again</a>
+            <a href="{% url 'quiz:dashboard' %}" class="btn btn-secondary" id="btn-back-dashboard" style="padding: 12px 28px; font-size: 15px; border-radius: 12px; font-weight: 700; background: var(--bg-surface);"><i class="fa-solid fa-chevron-left"></i> Dashboard</a>
+        </div>
+
+        {% if has_sections %}
+        <!-- Section Performance -->
+        <div style="margin-top: 35px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-layer-group" style="color: var(--primary-orange);"></i> Section Performance
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                {% for stat in section_stats %}
+                <div class="glass-card" style="padding: 20px; border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="font-size: 15px; font-weight: 800; color: var(--text-white); margin: 0;">{{ stat.name }}</h4>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--primary-orange);">{{ stat.score_pct }}%</div>
+                    </div>
+                    
+                    <div style="height: 6px; background: rgba(0,0,0,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 15px;">
+                        <div style="height: 100%; width: {{ stat.score_pct }}%; background: var(--primary-orange); border-radius: 3px;"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        <span style="color: var(--success-green);">{{ stat.correct }} <i class="fa-solid fa-check"></i></span>
+                        <span style="color: var(--danger-red);">{{ stat.wrong }} <i class="fa-solid fa-xmark"></i></span>
+                        <span style="color: #94a3b8;">{{ stat.skipped }} <i class="fa-solid fa-minus"></i></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    <!-- Exam Answer Key Review Drawer -->
+    <details class="glass-card" style="margin-top: 35px; text-align: left; padding: 25px;" id="answer-key-details">
+        <summary
+            style="font-size: 18px; font-weight: 700; color: var(--primary-orange); cursor: pointer; list-style-position: inside; outline: none; user-select: none;">
+            <i class="fa-solid fa-square-poll-vertical" style="margin-right: 6px;"></i> Click to View Answer Key &
+            Review Choices
+        </summary>
+
+        <div style="margin-top: 25px;" id="answer-key-container">
+            {% for response in attempt.responses.all %}
+            <div
+                style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px; {% if forloop.last %}border-bottom: none; padding-bottom: 0; margin-bottom: 0;{% endif %}">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 15px;">
+                    <h4 style="font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--text-white);">
+                        Q{{ forloop.counter }}: {{ response.question.text }}
+                    </h4>
+
+                    {% if response.selected_choice %}
+                    {% if response.selected_choice.is_correct %}
+                    <span class="badge badge-passed" style="white-space: nowrap;"><i class="fa-solid fa-check"></i>
+                        Correct</span>
+                    {% else %}
+                    <span class="badge badge-failed" style="white-space: nowrap;"><i class="fa-solid fa-xmark"></i>
+                        Incorrect</span>
+                    {% endif %}
+                    {% else %}
+                    <span class="badge badge-failed"
+                        style="white-space: nowrap; background: rgba(255, 107, 0, 0.08); border-color: var(--primary-orange); color: var(--primary-orange);">
+                        <i class="fa-solid fa-hourglass-end"></i> Unanswered
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% for choice in response.question.choices.all %}
+                    <div style="padding: 12px 16px; border-radius: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;
+                                {% if choice.is_correct %}
+                                    background: rgba(0, 200, 83, 0.08); border: 1px solid var(--success-green); color: var(--success-green);
+                                {% elif response.selected_choice == choice %}
+                                    background: rgba(213, 0, 0, 0.08); border: 1px solid var(--danger-red); color: var(--danger-red);
+                                {% else %}
+                                    background: rgba(0, 0, 0, 0.02); border: 1px solid var(--border-color); color: var(--text-white);
+                                {% endif %}
+                            ">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if choice.is_correct %}
+                            <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i>
+                            {% elif response.selected_choice == choice %}
+                            <i class="fa-solid fa-circle-xmark" style="font-size: 16px;"></i>
+                            {% else %}
+                            <i class="fa-regular fa-circle" style="font-size: 16px; color: var(--border-color);"></i>
+                            {% endif %}
+                            <span>{{ choice.text }}</span>
+                        </div>
+
+                        {% if response.selected_choice == choice %}
+                        <span
+                            style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Your
+                            Selection</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if response.question.explanation %}
+                <div style="margin-top: 15px; padding: 15px; background: rgba(255, 107, 0, 0.05); border-left: 3px solid var(--primary-orange); border-radius: 4px;">
+                    <h6 style="font-size: 13px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-lightbulb"></i> Explanation
+                    </h6>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                        {{ response.question.explanation|linebreaksbr }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+</div>
+<!-- Actions CTA bar -->
+<div class="glass-card" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; padding: 20px;">
+    <a href="{% url 'quiz:play' attempt.quiz.id %}" class="btn btn-primary" id="btn-retry"><i
+            class="fa-solid fa-rotate-right"></i> Try Again</a>
+
+    <button type="button" class="btn btn-outline-orange" id="btn-download-pdf">
+        <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+    </button>
+
+    {% if certificate %}
+    <a href="{% url 'quiz:view_certificate' certificate.id %}" target="_blank" class="btn btn-outline-orange"
+        style="border-color: var(--success-green); color: var(--success-green);">
+        <i class="fa-solid fa-medal"></i> Download Certificate
+    </a>
+    {% endif %}
+
+    <a href="{% url 'quiz:dashboard' %}" class="btn btn-secondary" id="btn-back-dashboard"><i
+            class="fa-solid fa-chevron-left"></i> Back to Dashboard</a>
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- PDF Generation ---
+        const downloadPdfBtn = document.getElementById('btn-download-pdf');
+        if (downloadPdfBtn) {
+            downloadPdfBtn.addEventListener('click', function () {
+                const element = document.getElementById('results-analysis-report');
+                const opt = {
+                    margin: [0.4, 0.4, 0.4, 0.4],
+                    filename: 'Quiz_Analysis_Report_{{ attempt.quiz.title|slugify }}_{{ attempt.id }}.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                downloadPdfBtn.disabled = true;
+                downloadPdfBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Generating PDF...';
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    downloadPdfBtn.disabled = false;
+                    downloadPdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF Report';
+                }).catch(err => {
+                    console.error("PDF error: ", err);
+                    downloadPdfBtn.disabled = false;
+                    downloadPdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF Report';
+                    alert("Export failed. Please use browser print (Cmd+P).");
+                });
+            });
+        }
+
+        // --- Chart.js Configurations ---
+        // 1. Pie Chart Answering Ratio
+        const pieCtx = document.getElementById('ratioPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Correct', 'Wrong', 'Skipped'],
+                datasets: [{
+                    data: [{{ attempt.correct_answers }}, {{ wrong_count }}, {{ skipped_count }}],
+        backgroundColor: ['#10B981', '#EF4444', '#9CA3AF'],
+        borderWidth: 1
+                }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 10, font: { size: 10 }, color: 'gray' }
+            }
+        }
+    }
+        });
+
+    // 2. Bar Chart Score Evaluation
+    const barCtx = document.getElementById('scoreBarChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Earned', 'Passing Mark', 'Max Points'],
+            datasets: [{
+                label: 'Score',
+                data: [{{ attempt.score }}, ({{ attempt.quiz.passing_score }} * {{ attempt.total_questions }}) / 100, {{ attempt.total_questions }}],
+    backgroundColor: ['#FF6B00', '#F59E0B', '#10B981'],
+        borderRadius: 4
+                }]
+            },
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+            x: { grid: { display: false } }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+        });
+
+    // 3. Line Chart Accuracy comparison
+    const lineCtx = document.getElementById('accuracyLineChart').getContext('2d');
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: ['Required Pass', 'Your Score', 'Perfect Score'],
+            datasets: [{
+                label: 'Accuracy %',
+                data: [{{ attempt.quiz.passing_score }}, {{ attempt.percentage }}, 100],
+        borderColor: '#FF6B00',
+        backgroundColor: 'rgba(255, 107, 0, 0.1)',
+        fill: true,
+        tension: 0.3
+    }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.04)' } }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+        });
+    });
+</script>
+{% endblock %}

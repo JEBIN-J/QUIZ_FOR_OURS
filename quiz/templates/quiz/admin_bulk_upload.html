@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Upload Questions · FJ Brothers Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --sidebar-bg: #ffffff;
+      --sidebar-width: 260px;
+      --accent: #f59e0b;
+      --body-bg: #fff8f0;
+      --card-bg: #ffffff;
+      --card-radius: 18px;
+      --text-primary: #111111;
+      --text-muted: #6b7280;
+      --border: #f0e8d8;
+      --shadow-sm: 0 1px 4px rgba(245,158,11,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; font-family:'Inter',system-ui,sans-serif; }
+    body { background:var(--body-bg); color:var(--text-primary); display:flex; min-height:100vh; }
+
+    .sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); border-right:2px solid var(--border); min-height:100vh; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:100; box-shadow:4px 0 20px rgba(245,158,11,0.06); will-change:transform; transform:translateZ(0); }
+    .sidebar-brand { display:flex; align-items:center; gap:12px; padding:28px 22px 24px; border-bottom:2px solid var(--border); }
+    .sidebar-brand .brand-icon { width:40px; height:40px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:12px; display:grid; place-items:center; font-size:1.25rem; color:#fff; }
+    .sidebar-brand .brand-text { font-size:1.25rem; font-weight:800; color:#111; }
+    .sidebar-brand .brand-text span { color:var(--accent); }
+    .sidebar-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); padding:20px 22px 8px; }
+    .sidebar-nav { padding:8px 12px; flex:1; }
+    .sidebar-nav a { display:flex; align-items:center; gap:12px; padding:10px 14px; color:#555; font-size:.875rem; font-weight:500; border-radius:10px; text-decoration:none; transition:all .2s; margin-bottom:2px; }
+    .sidebar-nav a i { font-size:1.1rem; width:20px; text-align:center; }
+    .sidebar-nav a:hover { background:var(--accent-soft); color:var(--accent-dark); }
+    .sidebar-nav a.active { background:linear-gradient(135deg,rgba(245,158,11,0.22),rgba(239,68,68,0.12)); color:var(--accent); font-weight:600; border-left:3px solid var(--accent); }
+    .sidebar-footer { padding:16px 12px; border-top:2px solid var(--border); }
+    .sidebar-footer a { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#888; font-size:.875rem; border-radius:10px; text-decoration:none; transition:all .2s; }
+    .sidebar-footer a:hover { background:rgba(239,68,68,0.12); color:#ef4444; }
+
+    .main-wrapper { margin-left:var(--sidebar-width); height:100vh; overflow-y:auto; scroll-behavior:smooth; }
+    .topbar { background:var(--card-bg); border-bottom:2px solid var(--border); padding:0 28px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm); }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-left h4 { font-size:1.1rem; font-weight:700; margin:0; }
+    .topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-badge { background:var(--black,#111); color:var(--accent); font-size:.7rem; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:.4px; }
+    .topbar-admin { display:flex; align-items:center; gap:10px; background:var(--body-bg); border:1px solid var(--border); padding:7px 14px; border-radius:50px; font-size:.85rem; font-weight:600; }
+    .topbar-admin .avatar { width:32px; height:32px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:50%; display:grid; place-items:center; font-size:.8rem; font-weight:700; color:#fff; }
+
+    .content-area { padding:28px; flex:1; display:flex; align-items:flex-start; justify-content:center; }
+
+    .upload-card { background:var(--card-bg); border-radius:var(--card-radius); border:1px solid var(--border); box-shadow:var(--shadow-sm); width:100%; max-width:640px; overflow:hidden; }
+    .upload-card-header { padding:22px 28px 18px; border-bottom:2px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .upload-card-header h2 { font-size:1.1rem; font-weight:700; margin:0; }
+    .upload-card-header i { color:var(--accent); font-size:1.2rem; }
+    .upload-card-body { padding:28px; }
+
+    .drop-zone {
+      border:2px dashed var(--border); border-radius:14px; padding:36px 20px;
+      text-align:center; cursor:pointer; transition:all .2s;
+      background:#fafafa;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color:var(--accent); background:rgba(245,158,11,.04); }
+    .drop-zone i { font-size:2.4rem; color:var(--text-muted); margin-bottom:10px; display:block; }
+    .drop-zone p { font-size:.875rem; color:var(--text-muted); margin:0; }
+    .drop-zone .file-name { font-size:.82rem; font-weight:600; color:var(--accent); margin-top:6px; }
+    .drop-zone input[type=file] { display:none; }
+
+    .info-box { background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-top:20px; font-size:.82rem; color:var(--text-muted); }
+    .info-box h6 { font-size:.82rem; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
+    .info-box code { background:#e5e7eb; border-radius:4px; padding:1px 5px; font-size:.78rem; color:#374151; }
+
+    .btn-row { display:flex; gap:10px; margin-top:22px; }
+    .btn-primary-cta { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border:none; padding:11px 24px; border-radius:10px; font-size:.875rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:opacity .2s; box-shadow:0 4px 12px rgba(245,158,11,0.3); }
+    .btn-primary-cta:hover { opacity:.9; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:10px 20px; border-radius:10px; font-size:.875rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all .2s; }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+    .alert-msg { padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:.875rem; display:flex; align-items:center; gap:8px; }
+    .alert-success { background:rgba(16,185,129,.1); color:#059669; border:1px solid rgba(16,185,129,.2); }
+    .alert-error { background:rgba(239,68,68,.1); color:#dc2626; border:1px solid rgba(239,68,68,.2); }
+
+    @media (max-width:991px) {
+      .sidebar { width:64px; overflow:hidden; }
+      .sidebar .sidebar-brand .brand-text, .sidebar .sidebar-section-label, .sidebar-nav a span, .sidebar-footer a span { display:none; }
+      .sidebar-brand { padding:20px 12px; justify-content:center; }
+      .sidebar-nav a { justify-content:center; padding:12px 10px; }
+      .main-wrapper { margin-left:64px; }
+    }
+  </style>
+
+<style>
+@keyframes rotate-border {
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animated-brand-border {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(234,88,12,0.2);
+}
+.animated-brand-border::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 500%;
+  background: conic-gradient(transparent, transparent, transparent, #ea580c);
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  animation: rotate-border 2.5s linear infinite;
+  z-index: 0;
+}
+.animated-brand-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 0;
+}
+.animated-brand-border > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand animated-brand-border" style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="{% url 'quiz:admin_dashboard' %}" class="active"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+      <a href="{% url 'quiz:admin_categories_list' %}"><i class="bi bi-tags-fill"></i> <span>Categories</span></a>
+      <a href="{% url 'quiz:admin_add_quiz' %}"><i class="bi bi-file-earmark-plus-fill"></i> <span>Create Quiz</span></a>
+      <a href="{% url 'quiz:admin_users_list' %}"><i class="bi bi-people-fill"></i> <span>Users</span></a>
+      <a href="{% url 'quiz:admin_reports' %}"><i class="bi bi-bar-chart-fill"></i> <span>Reports</span></a>
+      <a href="{% url 'quiz:leaderboard' %}"><i class="bi bi-trophy-fill"></i> <span>Leaderboard</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{% url 'quiz:logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <i class="bi bi-cloud-upload-fill text-warning"></i>
+        <h4>Bulk Upload Questions</h4>
+        <span style="margin:0 4px;color:#d1d5db;">›</span>
+        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">{{ quiz.title }}</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-badge"><i class="bi bi-shield-fill-check me-1"></i>Admin</span>
+        <div class="topbar-admin">
+          <div class="avatar">{{ request.user.username|first|upper }}</div>
+          <span>{{ request.user.username }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <div style="width:100%;max-width:640px;">
+        {% for message in messages %}
+        <div class="alert-msg {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+          <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+
+        <div class="upload-card">
+          <div class="upload-card-header">
+            <i class="bi bi-cloud-upload-fill"></i>
+            <h2>Upload Questions for "{{ quiz.title }}"</h2>
+          </div>
+          <div class="upload-card-body">
+            <form method="post" enctype="multipart/form-data" id="bulk-upload-form">
+              {% csrf_token %}
+              <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <i class="bi bi-file-earmark-arrow-up"></i>
+                <p>Drag & drop your CSV or JSON file here, or <strong style="color:var(--accent);">click to browse</strong></p>
+                <div class="file-name" id="file-name-display">No file chosen</div>
+                <input type="file" name="file" id="file-input" accept=".csv,.json" required>
+              </div>
+
+              <div class="info-box">
+                <h6><i class="bi bi-info-circle-fill" style="color:#3b82f6;"></i> Supported Formats</h6>
+                <p><strong>CSV columns:</strong> <code>text</code>, <code>type</code>, <code>correct_answer_text</code>, <code>difficulty</code>, <code>points</code>, <code>explanation</code>, <code>choice1</code>, <code>choice2</code>, <code>choice3</code>, <code>choice4</code>, <code>correct_choices</code> (comma-separated index)</p>
+                <br>
+                <p><strong>JSON format:</strong> Array of objects with <code>text</code>, <code>type</code>, <code>options</code> (list of <code>{"text": "…", "is_correct": true/false}</code>)</p>
+              </div>
+
+              <div class="btn-row">
+                <button type="submit" class="btn-primary-cta" id="btn-upload-submit">
+                  <i class="bi bi-cloud-upload-fill"></i> Upload Questions
+                </button>
+                <a href="{% url 'quiz:admin_dashboard' %}" class="btn-outline" id="btn-cancel-upload">
+                  <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+                <a href="{% url 'quiz:admin_export_questions' quiz.id %}?format=csv" class="btn-outline" id="btn-export-template">
+                  <i class="bi bi-download"></i> Export CSV
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const dropZone = document.getElementById('drop-zone');
+
+    fileInput.addEventListener('change', () => {
+      fileNameDisplay.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file chosen';
+    });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) {
+        fileInput.files = e.dataTransfer.files;
+        fileNameDisplay.textContent = e.dataTransfer.files[0].name;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2384 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · FJ Brothers — Government Exam Preparation</title>
+  <meta name="description"
+    content="Prepare for IAS, IPS, IFS, Army, Navy, Air Force, BSF, CAPF and all government competitive exams. Track your progress and improve your scores." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    /* ══════════════════════════════════════════
+       DESIGN TOKENS
+    ══════════════════════════════════════════ */
+    :root {
+      --orange: #f97316;
+      --orange-dark: #ea580c;
+      --orange-soft: rgba(249, 115, 22, .10);
+      --orange-soft2: rgba(249, 115, 22, .06);
+      --black: #0f172a;
+      --text: #1e293b;
+      --muted: #64748b;
+      --muted-light: #94a3b8;
+      --body-bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --border-soft: #f1f5f9;
+      --sidebar-w: 272px;
+      --topbar-h: 80px;
+      --card-r: 16px;
+      --sh-xs: 0 1px 3px rgba(0, 0, 0, .06);
+      --sh-sm: 0 2px 8px rgba(0, 0, 0, .07);
+      --sh-md: 0 4px 20px rgba(0, 0, 0, .09);
+      --sh-lg: 0 8px 32px rgba(0, 0, 0, .10);
+    }
+
+    /* ══ RESET ══ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--body-bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 300;
+      border-right: 1.5px solid var(--border);
+      box-shadow: 2px 0 20px rgba(0, 0, 0, .04);
+      transition: transform .3s ease, width .25s ease;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 290;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sb-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 22px 20px;
+      border-bottom: 2px solid var(--orange);
+    }
+
+    .sb-brand .logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, .35);
+    }
+
+    .sb-brand .brand-txt {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.5px;
+      white-space: nowrap;
+    }
+
+    .sb-brand .brand-txt span {
+      color: var(--orange);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--orange-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-user .uav {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .92rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sb-user .uname {
+      font-size: .875rem;
+      font-weight: 700;
+      color: var(--black);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sb-user .urole {
+      font-size: .7rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .sb-section-label {
+      font-size: .62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted-light);
+      padding: 18px 20px 6px;
+      white-space: nowrap;
+    }
+
+    .sb-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 10px;
+    }
+
+    .sb-nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      border-radius: 10px;
+      margin-bottom: 2px;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+
+    .sb-nav a i {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sb-nav a:hover {
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    .sb-nav a.active {
+      background: var(--orange);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sb-nav a.active i {
+      color: #fff;
+    }
+
+    .sb-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-footer a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+
+    .sb-footer a:hover {
+      background: rgba(239, 68, 68, .08);
+      color: #dc2626;
+    }
+
+    /* ══════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-width: 0;
+      /* Fix flex child expanding past viewport */
+    }
+
+    /* ══ TOPBAR ══ */
+    .topbar {
+      background: #fff;
+      border-bottom: 1.5px solid var(--border);
+      padding: 10px 36px;
+      height: var(--topbar-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .05);
+    }
+
+    .topbar-l {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hamburger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1.4rem;
+      color: var(--black);
+      transition: .2s;
+    }
+
+    .hamburger:hover {
+      background: var(--border-soft);
+    }
+
+    .topbar-l .pg-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(249, 115, 22, .28);
+      flex-shrink: 0;
+    }
+
+    .topbar-l h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.4px;
+    }
+
+    .topbar-l .sep {
+      color: #dde1e7;
+      font-size: 1.4rem;
+      font-weight: 200;
+      margin: 0 2px;
+    }
+
+    .topbar-l .pg-sub {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--orange-dark);
+      background: var(--orange-soft);
+      border: 1px solid rgba(249, 115, 22, .18);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .topbar-r {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tb-icon {
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      position: relative;
+    }
+
+    .tb-icon:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .tb-notif {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      border: 2px solid var(--body-bg);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.5);
+        opacity: .7;
+      }
+    }
+
+    .tb-chip {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      padding: 6px 16px 6px 7px;
+      border-radius: 50px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--black);
+      text-decoration: none;
+      transition: border-color .2s;
+    }
+
+    .tb-chip:hover {
+      border-color: var(--orange);
+    }
+
+    .tb-chip .av {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .84rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .tb-clock {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+      min-width: 100px;
+      font-family: 'Inter', monospace;
+    }
+
+    .tb-clock i {
+      color: var(--orange);
+      font-size: .7rem;
+    }
+
+    /* ══ PAGE CONTENT ══ */
+    .content {
+      padding: 32px 36px;
+      flex: 1;
+    }
+
+    /* ══════════════════════════════════════════
+       WELCOME HERO BANNER
+    ══════════════════════════════════════════ */
+    .hero-banner {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--sh-md);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark), #ff9d4d, var(--orange));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      z-index: 2;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 0%
+      }
+
+      100% {
+        background-position: 200%
+      }
+    }
+
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(249, 115, 22, .06) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 32px 40px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+
+    .hero-left {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange-soft);
+      border: 1px solid rgba(249, 115, 22, .22);
+      color: var(--orange-dark);
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .hero-greeting {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.5px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .hero-greeting span {
+      color: var(--orange);
+    }
+
+    .hero-sub {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 420px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 4px 16px rgba(249, 115, 22, .38);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(249, 115, 22, .48);
+      filter: brightness(1.06);
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--orange-dark);
+      border: 1.5px solid rgba(249, 115, 22, .35);
+      padding: 11px 20px;
+      border-radius: 12px;
+      font-size: .9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .btn-outline:hover {
+      background: var(--orange-soft);
+      border-color: var(--orange);
+      color: var(--orange-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Hero Stats Strip */
+    .hero-stats {
+      display: flex;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .hs-item {
+      padding: 20px 26px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .hs-item:last-child {
+      border-right: 0;
+    }
+
+    .hs-val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--black);
+      line-height: 1;
+    }
+
+    .hs-val span {
+      color: var(--orange);
+    }
+
+    .hs-key {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .9px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ══════════════════════════════════════════
+       QUICK STATS GRID
+    ══════════════════════════════════════════ */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh-sm);
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--sh-md);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark));
+    }
+
+    .sc-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: var(--orange-soft);
+      font-size: 1.3rem;
+      color: var(--orange);
+    }
+
+    .sc-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sc-num {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--black);
+      line-height: 1;
+      letter-spacing: -.5px;
+    }
+
+    .sc-label {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .sc-sub {
+      font-size: .75rem;
+      color: var(--muted-light);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sc-sub i {
+      font-size: .65rem;
+      color: var(--orange);
+    }
+
+    /* ══════════════════════════════════════════
+       PROGRESS SECTION (Chart + Stats)
+    ══════════════════════════════════════════ */
+    .progress-section {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh-sm);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .card-head h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-head h3 i {
+      color: var(--orange);
+    }
+
+    .card-head .card-sub {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .card-body {
+      padding: 20px 24px;
+    }
+
+    /* Improvement badge */
+    .improve-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+
+    .improve-up {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .improve-down {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    .improve-neutral {
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    /* ── Bar Chart ── */
+    .bar-chart-outer {
+      width: 100%;
+      padding: 8px 0 0 0;
+    }
+
+    .bar-chart-grid {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      height: 200px;
+      border-left: 2px solid #e2e8f0;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 12px 12px 0 12px;
+      position: relative;
+      background:
+        repeating-linear-gradient(to top,
+          transparent 0px,
+          transparent calc(20% - 1px),
+          rgba(0, 0, 0, 0.05) calc(20% - 1px),
+          rgba(0, 0, 0, 0.05) 20%);
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      gap: 6px;
+      position: relative;
+    }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 52px;
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      transition: filter 0.2s;
+      cursor: default;
+    }
+
+    .bar-fill:hover {
+      filter: brightness(1.1);
+    }
+
+    .bar-fill::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 20;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    .bar-fill:hover::after {
+      opacity: 1;
+    }
+
+    .bar-score {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--black);
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+
+    .bar-label {
+      font-size: 9.5px;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 6px;
+    }
+
+    .bar-labels-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 12px;
+    }
+
+    .bar-labels-row .bar-label {
+      flex: 1;
+      text-align: center;
+    }
+
+    .bar-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    .bar-legend span {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .bar-legend .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    /* Score summary list */
+    .score-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .score-row:last-child {
+      border-bottom: 0;
+    }
+
+    .score-row .lbl {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .score-row .val {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--orange);
+    }
+
+    .score-row .muted {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* Mini donut-style pass rate */
+    .pass-ring {
+      width: 100%;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1.5px solid var(--border);
+    }
+
+    .ring-label {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .ring-val {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--orange);
+    }
+
+    /* ══════════════════════════════════════════
+       EXAM CATEGORY SECTION
+    ══════════════════════════════════════════ */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-head h2 i {
+      color: var(--orange);
+    }
+
+    .section-head a {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .section-head a:hover {
+      text-decoration: underline;
+    }
+
+    .section-sub {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Category scroll strip */
+    .cat-strip {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 28px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .cat-strip::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .cat-strip::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .cat-strip::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .cat-card {
+      flex-shrink: 0;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      min-width: 156px;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--sh-xs);
+    }
+
+    .cat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .2s;
+    }
+
+    .cat-card:hover {
+      border-color: var(--orange);
+      transform: translateY(-4px);
+      box-shadow: var(--sh-md);
+    }
+
+    .cat-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .cat-card.active {
+      border-color: var(--orange);
+      background: var(--orange);
+      box-shadow: 0 8px 24px rgba(249, 115, 22, .32);
+    }
+
+    .cat-card.active::before {
+      transform: scaleX(1);
+      background: rgba(255, 255, 255, .25);
+    }
+
+    .cat-card .cc-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--orange-soft);
+      color: var(--orange);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+
+    .cat-card.active .cc-icon {
+      background: rgba(255, 255, 255, .2);
+      color: #fff;
+    }
+
+    .cat-card .cc-name {
+      font-size: .88rem;
+      font-weight: 800;
+      color: var(--black);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cat-card.active .cc-name {
+      color: #fff;
+    }
+
+    .cat-card .cc-count {
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .cat-card.active .cc-count {
+      color: rgba(255, 255, 255, .75);
+    }
+
+    .cc-took {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 6px;
+    }
+
+    .cat-card.active .cc-took {
+      background: rgba(255, 255, 255, .2);
+      color: #fff;
+    }
+
+    /* "All Exams" pill */
+    .cat-all {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all .2s;
+      white-space: nowrap;
+      box-shadow: var(--sh-xs);
+      align-self: flex-start;
+      margin-top: 4px;
+    }
+
+    .cat-all:hover,
+    .cat-all.active {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+    }
+
+    /* ══════════════════════════════════════════
+       QUIZ SECTION
+    ══════════════════════════════════════════ */
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      box-shadow: var(--sh-xs);
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-light);
+      font-size: .9rem;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: .85rem;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--orange);
+      background: #fff;
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--muted-light);
+    }
+
+    .filter-sel {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: .82rem;
+      font-family: inherit;
+      background: var(--body-bg);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+
+    .filter-sel:focus {
+      border-color: var(--orange);
+    }
+
+    .filter-btn {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+    }
+
+    .filter-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .filter-reset {
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 10px;
+      transition: color .2s;
+    }
+
+    .filter-reset:hover {
+      color: var(--orange);
+    }
+
+    /* Quiz Grid */
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .quiz-card {
+      background: #fff;
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh-xs);
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, box-shadow .2s;
+      overflow: hidden;
+    }
+
+    .quiz-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--sh-lg);
+      border-color: rgba(249, 115, 22, .25);
+    }
+
+    .qc-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .qc-cat {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--orange-dark);
+      background: var(--orange-soft);
+      padding: 3px 10px;
+      border-radius: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+
+    .qc-dur {
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .qc-dur i {
+      color: var(--orange);
+      font-size: .68rem;
+    }
+
+    .qc-body {
+      padding: 14px 16px;
+      flex: 1;
+    }
+
+    .qc-title {
+      font-size: .95rem;
+      font-weight: 800;
+      color: var(--black);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .qc-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+
+    .qc-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .qc-meta span {
+      font-size: .72rem;
+      color: var(--muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .qc-meta i {
+      color: var(--orange);
+      font-size: .68rem;
+    }
+
+    .qc-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .diff-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .diff-easy {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .diff-medium {
+      background: rgba(249, 115, 22, .1);
+      color: var(--orange-dark);
+    }
+
+    .diff-hard {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    .attempted-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .pending-badge {
+      font-size: .68rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 8px;
+      background: var(--body-bg);
+      color: var(--muted);
+    }
+
+    .qc-start {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+
+    .qc-start:hover {
+      filter: brightness(1.08);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, .38);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 52px 24px;
+      color: var(--muted);
+      background: #fff;
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      opacity: .15;
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .empty-state p {
+      font-size: .9rem;
+    }
+
+    .empty-state a {
+      color: var(--orange);
+      font-weight: 700;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pagination a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .pagination a:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    .pagination span {
+      font-size: .82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════
+       RECENT ATTEMPTS TABLE
+    ══════════════════════════════════════════ */
+    .att-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .att-table th {
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      padding: 12px 18px;
+      background: var(--body-bg);
+      border-bottom: 1.5px solid var(--border);
+      text-align: left;
+    }
+
+    .att-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: .85rem;
+      vertical-align: middle;
+    }
+
+    .att-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .att-table tr:hover td {
+      background: rgba(249, 115, 22, .02);
+    }
+
+    .att-name {
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .att-cat {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .att-pct {
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .pct-good {
+      color: #10b981;
+    }
+
+    .pct-mid {
+      color: var(--orange);
+    }
+
+    .pct-bad {
+      color: #ef4444;
+    }
+
+    .grade-pill {
+      display: inline-block;
+      min-width: 30px;
+      text-align: center;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: .78rem;
+      font-weight: 800;
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    .pass-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    .pp-pass {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .pp-fail {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    /* ══════════════════════════════════════════
+       MESSAGES
+    ══════════════════════════════════════════ */
+    .msgs {
+      list-style: none;
+      margin-bottom: 18px;
+    }
+
+    .msgs li {
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .msgs li.success {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .msgs li.error,
+    .msgs li.danger {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    .msgs li.info,
+    .msgs li.warning {
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 1280px) {
+      .quiz-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .progress-section {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        display: none;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 272px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .hamburger {
+        display: grid;
+      }
+
+      .sb-brand .brand-txt,
+      .sb-section-label,
+      .sb-nav a span,
+      .sb-footer a span,
+      .sb-user .uname,
+      .sb-user .urole {
+        display: block;
+      }
+
+      .sb-brand {
+        padding: 24px 22px 20px;
+        justify-content: flex-start;
+      }
+
+      .sb-nav a {
+        justify-content: flex-start;
+        padding: 10px 12px;
+      }
+
+      .sb-footer a {
+        justify-content: flex-start;
+        padding: 10px 14px;
+      }
+
+      .sb-user {
+        justify-content: flex-start;
+        padding: 14px 18px;
+      }
+
+      .tb-clock {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 16px;
+      }
+
+      .topbar {
+        padding: 10px 16px;
+        height: 68px;
+      }
+
+      .topbar-l h1 {
+        font-size: 1.1rem;
+      }
+
+      .topbar-l .pg-sub,
+      .topbar-l .pg-icon {
+        display: none;
+      }
+
+      .quiz-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .hero-inner {
+        padding: 24px 22px;
+      }
+
+      .hero-greeting {
+        font-size: 1.35rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .hero-actions a {
+        justify-content: center;
+      }
+
+      .progress-section {
+        grid-template-columns: 1fr;
+      }
+
+      .att-table th:nth-child(4),
+      .att-table td:nth-child(4),
+      .att-table th:nth-child(5),
+      .att-table td:nth-child(5) {
+        display: none;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .sc-num {
+        font-size: 1.4rem;
+      }
+
+      .tb-chip span {
+        display: none;
+      }
+    }
+  </style>
+
+  <style>
+    @keyframes rotate-border {
+      100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    .animated-brand-border {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    }
+
+    .animated-brand-border::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 500%;
+      background: conic-gradient(transparent, transparent, transparent, #ea580c);
+      transform-origin: center;
+      transform: translate(-50%, -50%);
+      animation: rotate-border 2.5s linear infinite;
+      z-index: 0;
+    }
+
+    .animated-brand-border::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      background: #fff;
+      border-radius: 10px;
+      z-index: 0;
+    }
+
+    .animated-brand-border>* {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <!-- ══════════ HIDDEN DATA ══════════ -->
+  <script id="chartDataJson" type="application/json">{{ chart_data_json }}</script>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand" style="padding: 15px 20px;">
+      <div
+        style="display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-radius: 12px; background: #fff; width: 100%;">
+        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon"
+          style="height: 36px; width: auto; object-fit: contain;">
+        <div
+          style="font-size: 1.3rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px; white-space: nowrap;">
+          FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
+      </div>
+    </div>
+    <div class="sb-user">
+      <div class="uav">{{ request.student.username|first|upper }}</div>
+      <div>
+        <div class="uname">{{ request.student.username }}</div>
+        <div class="urole">Student · Gov Exam Prep</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Student</div>
+      <a href="{% url 'quiz:dashboard' %}" class="active" id="nav-dashboard"><i
+          class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+      <a href="{% url 'quiz:leaderboard' %}" id="nav-leaderboard"><i
+          class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
+      <a href="{% url 'quiz:profile' %}" id="nav-profile"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
+
+      {% if user.is_staff or user.is_superuser %}
+      <div class="sb-section-label">Admin</div>
+      <a href="{% url 'quiz:admin_dashboard' %}" id="nav-admin"><i class="bi bi-speedometer2"></i><span>Admin
+          Panel</span></a>
+      {% endif %}
+    </nav>
+
+    <div class="sb-footer">
+      <a href="{% url 'quiz:logout' %}" id="nav-logout"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-l">
+        <div class="hamburger" id="hamburger"><i class="bi bi-list"></i></div>
+        <div class="pg-icon"><i class="bi bi-grid-1x2-fill"></i></div>
+        <h1>Dashboard</h1>
+        <span class="sep">|</span>
+        <span class="pg-sub">Exam Portal</span>
+      </div>
+      <div class="topbar-r">
+        <div class="tb-clock"><i class="bi bi-clock-fill"></i><span id="clock-display">--:--</span></div>
+        <a href="{% url 'quiz:leaderboard' %}" class="tb-icon" title="Leaderboard" id="btn-leaderboard-top"><i
+            class="bi bi-trophy-fill"></i></a>
+        <a href="#" class="tb-icon" title="Notifications" id="btn-notifications">
+          <i class="bi bi-bell-fill"></i>
+          {% if notifications %}<span class="tb-notif"></span>{% endif %}
+        </a>
+        <a href="{% url 'quiz:profile' %}" class="tb-chip" id="btn-profile-chip">
+          <div class="av">{{ request.student.username|first|upper }}</div>
+          <span>{{ request.student.get_full_name|default:request.student.username }}</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="content">
+
+      {% if messages %}
+      <ul class="msgs">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">
+          {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+          {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill"></i>
+          {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+          {{ message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- ═══════════ HERO BANNER ═══════════ -->
+      <section class="hero-banner" aria-label="Welcome">
+        <div class="hero-inner">
+          <div class="hero-left">
+            <div class="hero-badge"><i class="bi bi-patch-check-fill"></i> Government Exam Portal</div>
+            <h2 class="hero-greeting">
+              Welcome back, <span>{{ request.student.get_full_name|default:request.student.username }}</span>! 👋
+            </h2>
+            <p class="hero-sub">
+              Your journey to a government career continues. Pick an exam category below, practice daily, and track your
+              improvement.
+            </p>
+            <div class="hero-actions">
+              {% if page_obj %}
+              <a href="#quiz-section" class="btn-primary" id="btn-start-exam"><i class="bi bi-play-circle-fill"></i>
+                Start Practice</a>
+              {% endif %}
+              <a href="{% url 'quiz:leaderboard' %}" class="btn-outline" id="btn-leaderboard-hero"><i
+                  class="bi bi-trophy-fill"></i> Leaderboard</a>
+            </div>
+          </div>
+          <!-- Stats strip -->
+          <div class="hero-stats" aria-label="Quick statistics">
+            <div class="hs-item">
+              <div class="hs-val">{{ stats.total_taken }}</div>
+              <div class="hs-key">Tests Taken</div>
+            </div>
+            <div class="hs-item">
+              <div class="hs-val"><span>{{ stats.avg_score }}</span>%</div>
+              <div class="hs-key">Avg Score</div>
+            </div>
+            <div class="hs-item">
+              <div class="hs-val"><span>{{ stats.best_score }}</span>%</div>
+              <div class="hs-key">Best Score</div>
+            </div>
+            <div class="hs-item">
+              <div class="hs-val">{{ stats.pass_rate }}<span style="font-size:1.1rem;">%</span></div>
+              <div class="hs-key">Pass Rate</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ QUICK STAT CARDS ═══════════ -->
+      <section class="stat-grid" aria-label="Statistics">
+        <div class="stat-card" id="stat-available">
+          <div class="sc-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+          <div class="sc-body">
+            <div class="sc-num">{{ stats.total_quizzes }}</div>
+            <div class="sc-label">Available Exams</div>
+            <div class="sc-sub"><i class="bi bi-circle-fill"></i> {{ stats.pending_count }} pending</div>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-taken">
+          <div class="sc-icon"><i class="bi bi-check2-all"></i></div>
+          <div class="sc-body">
+            <div class="sc-num">{{ stats.total_taken }}</div>
+            <div class="sc-label">Tests Attended</div>
+            <div class="sc-sub"><i class="bi bi-circle-fill"></i> {{ stats.total_passed }} passed</div>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-avg">
+          <div class="sc-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="sc-body">
+            <div class="sc-num">{{ stats.avg_score }}<span style="font-size:1rem;color:var(--muted);">%</span></div>
+            <div class="sc-label">Average Score</div>
+            <div class="sc-sub"><i class="bi bi-circle-fill"></i> Best: {{ stats.best_score }}%</div>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-time">
+          <div class="sc-icon"><i class="bi bi-clock-history"></i></div>
+          <div class="sc-body">
+            <div class="sc-num">{{ stats.total_time }}</div>
+            <div class="sc-label">Minutes Practiced</div>
+            <div class="sc-sub"><i class="bi bi-circle-fill"></i> Total study time</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ PROGRESS SECTION ═══════════ -->
+      <section class="progress-section" aria-label="Progress tracking">
+
+        <!-- Performance Chart -->
+        <div class="card">
+          <div class="card-head">
+            <h3><i class="bi bi-bar-chart-line-fill"></i> Score Improvement</h3>
+            <div style="display:flex;align-items:center;gap:10px;">
+              {% if improvement_delta is not None %}
+              <span class="improve-badge {% if improvement_delta >= 0 %}improve-up{% else %}improve-down{% endif %}">
+                {% if improvement_delta >= 0 %}<i class="bi bi-arrow-up-short"></i> +{{ improvement_delta }}%{% else
+                %}<i class="bi bi-arrow-down-short"></i> {{ improvement_delta }}%{% endif %}
+              </span>
+              {% endif %}
+              <span class="card-sub">Last {{ chart_data|length }} attempts</span>
+            </div>
+          </div>
+          <div class="card-body">
+            {% if chart_data %}
+            <div class="bar-chart-outer">
+              <div class="bar-chart-grid">
+                {% for item in chart_data %}
+                <div class="bar-col">
+                  <div class="bar-score">{{ item.percentage }}%</div>
+                  <div class="bar-fill"
+                    style="height:{{ item.percentage }}%;background:{% if item.passed %}linear-gradient(180deg,#10b981,#059669){% else %}linear-gradient(180deg,#f97316,#ea580c){% endif %};"
+                    data-tip="{{ item.label }} · {{ item.percentage }}% · {% if item.passed %}Passed ✓{% else %}Failed ✗{% endif %}">
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="bar-labels-row">
+                {% for item in chart_data %}
+                <div class="bar-label">{{ item.label|truncatechars:10 }}</div>
+                {% endfor %}
+              </div>
+              <div class="bar-legend">
+                <span><span class="dot" style="background:#10b981;"></span>Passed</span>
+                <span><span class="dot" style="background:#f97316;"></span>Failed</span>
+              </div>
+            </div>
+            {% if improvement_text %}
+            <p style="font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center;">📈 {{ improvement_text }}
+            </p>
+            {% endif %}
+            {% else %}
+            <div class="empty-state" style="border:none;padding:40px 0;">
+              <i class="bi bi-bar-chart-line"></i>
+              <p>No attempts yet. Complete an exam to see your progress chart!</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="card">
+          <div class="card-head">
+            <h3><i class="bi bi-clipboard-data-fill"></i> Performance</h3>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="score-rows" style="padding:0 24px;">
+              <div class="score-row">
+                <span class="lbl">Tests Attended</span>
+                <span class="val">{{ stats.total_taken }}</span>
+              </div>
+              <div class="score-row">
+                <span class="lbl">Tests Passed</span>
+                <span class="val" style="color:#10b981;">{{ stats.total_passed }}</span>
+              </div>
+              <div class="score-row">
+                <span class="lbl">Tests Failed</span>
+                <span class="val" style="color:#ef4444;">{{ stats.total_failed }}</span>
+              </div>
+              <div class="score-row">
+                <span class="lbl">Best Score</span>
+                <span class="val">{{ stats.best_score }}%</span>
+              </div>
+              <div class="score-row">
+                <span class="lbl">Avg Score</span>
+                <span class="muted">{{ stats.avg_score }}%</span>
+              </div>
+              <div class="score-row">
+                <span class="lbl">Study Time</span>
+                <span class="muted">{{ stats.total_time }} min</span>
+              </div>
+            </div>
+            <div class="pass-ring">
+              <div>
+                <div class="ring-label">Pass Rate</div>
+                <div style="font-size:.72rem;color:var(--muted-light);">Passed / Total</div>
+              </div>
+              <div class="ring-val">{{ stats.pass_rate }}%</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ═══════════ EXAM CATEGORIES ═══════════ -->
+      <section aria-label="Exam categories" id="category-section">
+        <div class="section-head">
+          <div>
+            <h2><i class="bi bi-mortarboard-fill"></i> Choose Your Exam</h2>
+            <div class="section-sub">Select a category to browse practice tests for that exam</div>
+          </div>
+        </div>
+
+        <div class="cat-strip" id="cat-strip" role="list">
+          <!-- All Exams -->
+          <a href="?category=all{% if diff_filter != 'all' %}&difficulty={{ diff_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="cat-all {% if cat_filter == 'all' %}active{% endif %}" id="cat-all-btn" role="listitem">
+            <i class="bi bi-grid-fill"></i> All Exams
+          </a>
+
+          {% for cs in category_stats %}
+          {% if cs.category.published_count > 0 %}
+          <a href="?category={{ cs.category.name|urlencode }}{% if diff_filter != 'all' %}&difficulty={{ diff_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+            class="cat-card {% if cat_filter == cs.category.name %}active{% endif %}" id="cat-{{ cs.category.id }}"
+            role="listitem" aria-label="{{ cs.category.name }} — {{ cs.category.published_count }} exams">
+            <div class="cc-icon">
+              <i class="{{ cs.category.icon }}"></i>
+            </div>
+            <div class="cc-name">{{ cs.category.name }}</div>
+            <div class="cc-count">{{ cs.category.published_count }} exam{{ cs.category.published_count|pluralize }}
+            </div>
+            {% if cs.taken > 0 %}
+            <div class="cc-took"><i class="bi bi-check2"></i> {{ cs.taken }} taken</div>
+            {% endif %}
+          </a>
+          {% endif %}
+          {% empty %}
+          <p style="color:var(--muted);font-size:.85rem;padding:12px 0;">No categories available yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- ═══════════ QUIZ LIST ═══════════ -->
+      <section aria-label="Available quizzes" id="quiz-section">
+        <div class="section-head">
+          <div>
+            <h2><i class="bi bi-journal-richtext"></i>
+              {% if cat_filter != 'all' %}{{ cat_filter }} Exams{% else %}All Practice Exams{% endif %}
+            </h2>
+            <div class="section-sub">
+              {% if page_obj %}{{ page_obj.paginator.count }} exam{{ page_obj.paginator.count|pluralize }} found{% endif %}
+              {% if cat_filter != 'all' %} · Filtered by <strong>{{ cat_filter }}</strong>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <form method="get" class="filter-bar" id="filter-form">
+          {% if cat_filter != 'all' %}<input type="hidden" name="category" value="{{ cat_filter }}">{% endif %}
+          <div class="search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search exams..." id="search-input">
+          </div>
+          <select name="difficulty" class="filter-sel" id="diff-filter">
+            <option value="all" {% if diff_filter == 'all' %}selected{% endif %}>All Levels</option>
+            <option value="Easy" {% if diff_filter == 'Easy' %}selected{% endif %}>Easy</option>
+            <option value="Medium" {% if diff_filter == 'Medium' %}selected{% endif %}>Medium</option>
+            <option value="Hard" {% if diff_filter == 'Hard' %}selected{% endif %}>Hard</option>
+          </select>
+          <select name="sort" class="filter-sel" id="sort-filter">
+            <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+            <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title A–Z</option>
+            <option value="duration" {% if sort_by == 'duration' %}selected{% endif %}>Duration ↑</option>
+            <option value="-duration" {% if sort_by == '-duration' %}selected{% endif %}>Duration ↓</option>
+          </select>
+          <button type="submit" class="filter-btn" id="apply-filter-btn"><i class="bi bi-funnel-fill"></i>
+            Apply</button>
+          {% if search_query or diff_filter != 'all' %}
+          <a href="?category={{ cat_filter }}" class="filter-reset" id="clear-filter-btn"><i class="bi bi-x-circle"></i>
+            Clear</a>
+          {% endif %}
+        </form>
+
+        <!-- Quiz Cards -->
+        {% if page_obj %}
+        <div class="quiz-grid" id="quiz-grid">
+          {% for quiz in page_obj %}
+          <article class="quiz-card" id="quiz-card-{{ quiz.id }}">
+            <div class="qc-top">
+              <span class="qc-cat">{% if quiz.category %}{{ quiz.category.name }}{% else %}General{% endif %}</span>
+              <span class="qc-dur"><i class="bi bi-clock-fill"></i> {{ quiz.duration }} min</span>
+            </div>
+            <div class="qc-body">
+              <h3 class="qc-title">{{ quiz.title }}</h3>
+              <p class="qc-desc">{{ quiz.description|truncatechars:100 }}</p>
+              <div class="qc-meta">
+                <span><i class="bi bi-patch-question-fill"></i> {{ quiz.num_questions }} Q's</span>
+                <span><i class="bi bi-trophy-fill"></i> Pass {{ quiz.passing_score }}%</span>
+                <span><i class="bi bi-clock"></i> {{ quiz.duration }}m</span>
+              </div>
+            </div>
+            <div class="qc-footer">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span
+                  class="diff-badge {% if quiz.difficulty == 'Easy' %}diff-easy{% elif quiz.difficulty == 'Hard' %}diff-hard{% else %}diff-medium{% endif %}">
+                  {{ quiz.difficulty }}
+                </span>
+                {% if quiz.has_attempted %}
+                <span class="attempted-badge"><i class="bi bi-check-circle-fill"></i> Done</span>
+                {% else %}
+                <span class="pending-badge">Pending</span>
+                {% endif %}
+              </div>
+              <a href="{% url 'quiz:overview' quiz.id %}" class="qc-start" id="start-btn-{{ quiz.id }}">
+                <i class="bi bi-play-fill"></i>
+                {% if quiz.has_attempted %}Retry{% else %}Start{% endif %}
+              </a>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+          <a
+            href="?page={{ page_obj.previous_page_number }}&category={{ cat_filter }}&difficulty={{ diff_filter }}&search={{ search_query }}&sort={{ sort_by }}">
+            <i class="bi bi-chevron-left"></i> Prev
+          </a>
+          {% endif %}
+          <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a
+            href="?page={{ page_obj.next_page_number }}&category={{ cat_filter }}&difficulty={{ diff_filter }}&search={{ search_query }}&sort={{ sort_by }}">
+            Next <i class="bi bi-chevron-right"></i>
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+          <i class="bi bi-journal-x"></i>
+          <p>No exams match your current filters. <a href="{% url 'quiz:dashboard' %}">Clear all filters →</a></p>
+        </div>
+        {% endif %}
+      </section>
+
+      <!-- ═══════════ RECENT ATTEMPTS ═══════════ -->
+      {% if recent_attempts %}
+      <section aria-label="Recent attempts" style="margin-top:36px;">
+        <div class="section-head">
+          <h2><i class="bi bi-clock-history"></i> Recent Attempts</h2>
+          <a href="{% url 'quiz:profile' %}">View all →</a>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0; overflow-x:auto;">
+            <table class="att-table">
+              <thead>
+                <tr>
+                  <th>Exam</th>
+                  <th>Category</th>
+                  <th>Score</th>
+                  <th>Grade</th>
+                  <th>Result</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attempt in recent_attempts %}
+                <tr>
+                  <td>
+                    <div class="att-name">{{ attempt.quiz.title|truncatechars:34 }}</div>
+                  </td>
+                  <td>
+                    <span style="font-size:.75rem;color:var(--muted);font-weight:600;">
+                      {% if attempt.quiz.category %}{{ attempt.quiz.category.name }}{% else %}General{% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="att-pct {% if attempt.percentage >= 70 %}pct-good{% elif attempt.percentage >= 50 %}pct-mid{% else %}pct-bad{% endif %}">
+                      {{ attempt.percentage }}%
+                    </span>
+                  </td>
+                  <td><span class="grade-pill">{{ attempt.grade }}</span></td>
+                  <td>
+                    {% if attempt.passed %}
+                    <span class="pass-pill pp-pass"><i class="bi bi-check-circle-fill"></i> Passed</span>
+                    {% else %}
+                    <span class="pass-pill pp-fail"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                    {% endif %}
+                  </td>
+                  <td style="font-size:.78rem;color:var(--muted);">{{ attempt.completed_at|date:"d M Y" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+    </main>
+  </div><!-- .main -->
+
+  <script>
+    /* ── Clock ── */
+    (function () {
+      function tick() {
+        var el = document.getElementById('clock-display');
+        if (!el) return;
+        var n = new Date();
+        var h = String(n.getHours()).padStart(2, '0');
+        var m = String(n.getMinutes()).padStart(2, '0');
+        var s = String(n.getSeconds()).padStart(2, '0');
+        el.textContent = h + ':' + m + ':' + s;
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
+
+    /* ── Sidebar Toggle ── */
+    (function () {
+      const btn = document.getElementById('hamburger');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+
+      if (btn && sidebar && overlay) {
+        btn.addEventListener('click', () => {
+          sidebar.classList.add('open');
+          overlay.classList.add('show');
+        });
+        overlay.addEventListener('click', () => {
+          sidebar.classList.remove('open');
+          overlay.classList.remove('show');
+        });
+      }
+    })();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,119 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin-top: 40px; margin-bottom: 60px;">
+    
+    <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <span class="badge" style="background-color: rgba(255, 107, 53, 0.1); color: var(--primary-orange); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: inline-block;">
+                    {{ quiz.category.name|default:"General" }}
+                </span>
+                <h1 style="font-size: 28px; font-weight: 800; color: var(--text-dark); margin: 0;">{{ quiz.title }}</h1>
+                <p style="color: var(--text-muted); font-size: 15px; margin-top: 8px; margin-bottom: 0;">{{ quiz.subject.name|default:"General Knowledge" }}</p>
+            </div>
+            
+            <div style="text-align: right;">
+                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 5px;">Time Limit</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--text-dark);">
+                    <i class="fa-regular fa-clock" style="color: var(--primary-orange); margin-right: 5px;"></i> {{ quiz.duration }} min
+                </div>
+            </div>
+        </div>
+        
+        {% if quiz.description %}
+        <p style="color: var(--text-light); font-size: 15px; line-height: 1.6; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+            {{ quiz.description }}
+        </p>
+        {% endif %}
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+            <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; text-align: center;">
+                <i class="fa-solid fa-list-ol" style="color: var(--primary-orange); font-size: 20px; margin-bottom: 10px;"></i>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total Questions</div>
+                <div style="font-size: 20px; font-weight: 800; color: var(--text-dark); margin-top: 5px;">{{ total_questions }}</div>
+            </div>
+            <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; text-align: center;">
+                <i class="fa-solid fa-trophy" style="color: #FFB300; font-size: 20px; margin-bottom: 10px;"></i>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Passing Score</div>
+                <div style="font-size: 20px; font-weight: 800; color: var(--text-dark); margin-top: 5px;">{{ quiz.passing_score }}%</div>
+            </div>
+            <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; text-align: center;">
+                <i class="fa-solid fa-minus-circle" style="color: var(--danger-red); font-size: 20px; margin-bottom: 10px;"></i>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Negative Marks</div>
+                <div style="font-size: 20px; font-weight: 800; color: var(--text-dark); margin-top: 5px;">{% if quiz.negative_marking %}-{{ quiz.negative_marks_per_question }}{% else %}None{% endif %}</div>
+            </div>
+        </div>
+
+
+
+        {% if sections %}
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center;">
+                <i class="fa-solid fa-layer-group" style="color: var(--primary-orange); margin-right: 10px;"></i> Section Breakdown
+            </h3>
+            <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background-color: rgba(0,0,0,0.03); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 12px 15px; font-weight: 600; font-size: 14px; color: var(--text-dark);">Section Name</th>
+                            <th style="padding: 12px 15px; font-weight: 600; font-size: 14px; color: var(--text-dark);">Questions</th>
+                            <th style="padding: 12px 15px; font-weight: 600; font-size: 14px; color: var(--text-dark);">Time Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sec in sections %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 15px; font-size: 15px; color: var(--text-dark); font-weight: 500;">{{ sec.title }}</td>
+                            <td style="padding: 12px 15px; font-size: 14px; color: var(--text-muted);">{{ sec.questions.count }} Q's</td>
+                            <td style="padding: 12px 15px; font-size: 14px; color: var(--text-muted);">{% if sec.time_limit %}{{ sec.time_limit }} min{% else %}No Limit{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if general_questions_count > 0 %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 15px; font-size: 15px; color: var(--text-dark); font-weight: 500;">General Section</td>
+                            <td style="padding: 12px 15px; font-size: 14px; color: var(--text-muted);">{{ general_questions_count }} Q's</td>
+                            <td style="padding: 12px 15px; font-size: 14px; color: var(--text-muted);">No Limit</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if quiz.conditions.all %}
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center;">
+                <i class="fa-solid fa-list-check" style="color: var(--primary-orange); margin-right: 10px;"></i> Exam Conditions & Rules
+            </h3>
+            <div style="background-color: rgba(255, 107, 53, 0.03); border-left: 4px solid var(--primary-orange); padding: 20px; border-radius: 4px;">
+                <ul style="margin: 0; padding-left: 20px; color: var(--text-light); font-size: 15px; line-height: 1.6;">
+                    {% for condition in quiz.conditions.all %}
+                        <li style="margin-bottom: 8px;">{{ condition.text }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            {% if is_demo %}
+            <a href="{% url 'quiz:play_demo' quiz.id %}" class="btn btn-primary" style="font-size: 18px; padding: 15px 40px; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">
+                <i class="fa-solid fa-play" style="margin-right: 8px;"></i> Start Demo Exam
+            </a>
+            {% else %}
+            <a href="{% url 'quiz:play' quiz.id %}" class="btn btn-primary" style="font-size: 18px; padding: 15px 40px; font-weight: 700; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">
+                <i class="fa-solid fa-play" style="margin-right: 8px;"></i> Start Exam
+            </a>
+            {% endif %}
+            <div style="margin-top: 15px;">
+                <a href="javascript:history.back()" style="color: var(--text-muted); font-size: 14px; text-decoration: none;">
+                    Cancel & Go Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

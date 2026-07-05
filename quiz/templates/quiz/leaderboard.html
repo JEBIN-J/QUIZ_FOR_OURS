@@ -1,0 +1,1193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard · FJ Brothers</title>
+  <meta name="description" content="View the top-ranked examinees on FJ Brothers's leaderboard.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --orange: #f97316;
+      --orange-dark: #ea580c;
+      --orange-soft: rgba(249, 115, 22, 0.10);
+      --black: #111111;
+      --body-bg: #f8f5f2;
+      --card-bg: #ffffff;
+      --border: #e8e2dc;
+      --text: #111111;
+      --muted: #78716c;
+      --sidebar-w: 268px;
+      --card-r: 16px;
+      --sh: 0 1px 4px rgba(0, 0, 0, .07), 0 2px 8px rgba(0, 0, 0, .04);
+      --sh-md: 0 4px 20px rgba(0, 0, 0, .10);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--body-bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--card-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 300;
+      border-right: 2px solid var(--border);
+      box-shadow: 2px 0 16px rgba(0, 0, 0, .04);
+      transition: transform .3s ease, width .25s ease;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 290;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sb-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 20px;
+      border-bottom: 3px solid var(--orange);
+      background: #fff;
+    }
+
+    .sb-brand .ico {
+      width: 42px;
+      height: 42px;
+      background: var(--orange);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sb-brand .txt {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.5px;
+    }
+
+    .sb-brand .txt span {
+      color: var(--orange);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--orange-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-user .av {
+      width: 38px;
+      height: 38px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .9rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sb-user .name {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .sb-user .role {
+      font-size: .7rem;
+      color: var(--muted);
+    }
+
+    .sb-label {
+      font-size: .63rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      padding: 16px 20px 6px;
+    }
+
+    .sb-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 10px;
+    }
+
+    .sb-nav a {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 12px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .18s;
+      margin-bottom: 2px;
+    }
+
+    .sb-nav a i {
+      font-size: 1.05rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sb-nav a:hover {
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    .sb-nav a.active {
+      background: var(--orange);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sb-nav a.active i {
+      color: #fff;
+    }
+
+    .sb-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-footer a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 600;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .18s;
+    }
+
+    .sb-footer a:hover {
+      background: rgba(239, 68, 68, .08);
+      color: #dc2626;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-width: 0;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: #fff;
+      border-bottom: 1.5px solid var(--border);
+      padding: 10px 40px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .05);
+    }
+
+    .topbar-l {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hamburger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1.4rem;
+      color: var(--black);
+      transition: .2s;
+    }
+
+    .hamburger:hover {
+      background: var(--border-soft);
+    }
+
+    .topbar-l .page-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(249, 115, 22, .30);
+      flex-shrink: 0;
+    }
+
+    .topbar-l h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black);
+      margin: 0;
+      letter-spacing: -.4px;
+    }
+
+    .topbar-l .sep {
+      color: #e2e2e2;
+      font-size: 1.4rem;
+      font-weight: 200;
+      margin: 0 4px;
+    }
+
+    .topbar-l .sub {
+      font-size: .76rem;
+      color: var(--orange-dark);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--orange-soft);
+      border: 1px solid rgba(249, 115, 22, .18);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .topbar-r {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      padding: 6px 16px 6px 7px;
+      border-radius: 50px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--black);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+      text-decoration: none;
+      transition: border-color .2s;
+    }
+
+    .topbar-chip:hover {
+      border-color: var(--orange);
+    }
+
+    .topbar-chip .av {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .84rem;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, .35);
+      flex-shrink: 0;
+    }
+
+    .topbar-icon-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+    }
+
+    .topbar-icon-btn:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 36px 38px;
+      flex: 1;
+    }
+
+    /* PAGE HEADER */
+    .page-header {
+      background: #fff;
+      border-radius: 20px;
+      padding: 0;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark), #ff9d4d, var(--orange));
+      background-size: 200% 100%;
+      animation: shimmer-bar 3s linear infinite;
+      z-index: 2;
+    }
+
+    @keyframes shimmer-bar {
+      0% {
+        background-position: 0% 0%;
+      }
+
+      100% {
+        background-position: 200% 0%;
+      }
+    }
+
+    .page-header-inner {
+      padding: 30px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .ph-text .ph-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange-soft);
+      border: 1px solid rgba(249, 115, 22, .22);
+      color: var(--orange-dark);
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .ph-text h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.4px;
+      margin-bottom: 6px;
+    }
+
+    .ph-text p {
+      font-size: .88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* FILTER */
+    .filter-card {
+      background: #fff;
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh);
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-card label {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    .filter-select {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: .85rem;
+      font-family: inherit;
+      background: var(--body-bg);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .filter-select:focus {
+      border-color: var(--orange);
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .2s;
+      box-shadow: 0 4px 14px rgba(249, 115, 22, .35);
+      text-decoration: none;
+    }
+
+    .btn-orange:hover {
+      transform: translateY(-2px);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(249, 115, 22, .45);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+      text-decoration: none;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    /* GRID */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 22px;
+    }
+
+    /* SECTION CARD */
+    .sc {
+      background: var(--card-bg);
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh);
+      overflow: hidden;
+    }
+
+    .sc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      border-bottom: 2px solid var(--border);
+      background: #fff;
+    }
+
+    .sc-head h5 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--black);
+    }
+
+    .sc-head h5 i {
+      color: var(--orange);
+    }
+
+    .sc-body {
+      padding: 0;
+    }
+
+    /* TABLE */
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .lb-table th {
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      padding: 12px 20px;
+      background: var(--body-bg);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .lb-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: .875rem;
+      vertical-align: middle;
+    }
+
+    .lb-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .lb-table tr:hover td {
+      background: rgba(249, 115, 22, .03);
+    }
+
+    .rank-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .rank-1 {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, .4);
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+      color: #fff;
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #cd7c2f, #b45309);
+      color: #fff;
+    }
+
+    .rank-other {
+      background: var(--body-bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-av {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .85rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-weight: 700;
+      font-size: .875rem;
+    }
+
+    .pct-val {
+      font-size: .95rem;
+      font-weight: 800;
+      color: var(--orange);
+    }
+
+    .time-val {
+      font-size: .8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .score-val {
+      font-size: .875rem;
+      font-weight: 700;
+    }
+
+    /* MINI LISTS */
+    .mini-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mini-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mini-item:last-child {
+      border-bottom: 0;
+    }
+
+    .mini-rank {
+      font-size: .75rem;
+      font-weight: 800;
+      color: var(--muted);
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .mini-av {
+      width: 32px;
+      height: 32px;
+      background: var(--orange-soft);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .8rem;
+      font-weight: 800;
+      color: var(--orange-dark);
+      flex-shrink: 0;
+    }
+
+    .mini-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .mini-name {
+      font-size: .82rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-sub {
+      font-size: .7rem;
+      color: var(--muted);
+    }
+
+    .mini-val {
+      font-size: .85rem;
+      font-weight: 800;
+      color: var(--orange);
+      flex-shrink: 0;
+    }
+
+    /* EMPTY */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state i {
+      font-size: 2.8rem;
+      opacity: .18;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: .9rem;
+    }
+
+    /* ME ROW */
+    .me-row td {
+      background: rgba(249, 115, 22, .05);
+      font-weight: 700;
+    }
+
+    /* MESSAGES */
+    .msgs {
+      list-style: none;
+      margin-bottom: 16px;
+    }
+
+    .msgs li {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .msgs li.success {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .msgs li.error,
+    .msgs li.danger {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    .msgs li.info,
+    .msgs li.warning {
+      background: rgba(249, 115, 22, .1);
+      color: var(--orange-dark);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:991px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 268px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .hamburger {
+        display: grid;
+      }
+
+      .sb-brand .txt,
+      .sb-label,
+      .sb-nav a span,
+      .sb-footer a span,
+      .sb-user .info {
+        display: block;
+      }
+
+      .sb-brand {
+        padding: 22px 20px;
+        justify-content: flex-start;
+      }
+
+      .sb-nav a,
+      .sb-footer a {
+        justify-content: flex-start;
+        padding: 9px 12px;
+      }
+
+      .sb-user {
+        justify-content: flex-start;
+        padding: 14px 18px;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width:600px) {
+      .content {
+        padding: 16px;
+      }
+
+      .topbar {
+        padding: 0 16px;
+        height: 64px;
+      }
+
+      .topbar-l h1 {
+        font-size: 1.1rem;
+      }
+
+      .topbar-l .sub,
+      .topbar-l .page-icon {
+        display: none;
+      }
+
+      .page-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px 20px;
+      }
+
+      .lb-table th:nth-child(4),
+      .lb-table td:nth-child(4) {
+        display: none;
+      }
+
+      .filter-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <style>
+    @keyframes rotate-border {
+      100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    .animated-brand-border {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    }
+
+    .animated-brand-border::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 500%;
+      background: conic-gradient(transparent, transparent, transparent, #ea580c);
+      transform-origin: center;
+      transform: translate(-50%, -50%);
+      animation: rotate-border 2.5s linear infinite;
+      z-index: 0;
+    }
+
+    .animated-brand-border::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      background: #fff;
+      border-radius: 10px;
+      z-index: 0;
+    }
+
+    .animated-brand-border>* {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand animated-brand-border"
+      style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon"
+        style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span
+          style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+    <div class="sb-user">
+      <div class="av">{{ request.student.username|first|upper }}</div>
+      <div class="info">
+        <div class="name">{{ request.student.username }}</div>
+        <div class="role">Student</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-label">Main</div>
+      <a href="{% url 'quiz:dashboard' %}"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+      <a href="{% url 'quiz:leaderboard' %}" class="active"><i
+          class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
+      <a href="{% url 'quiz:profile' %}"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
+      {% if user.is_staff or user.is_superuser %}
+      <div class="sb-label">Admin</div>
+      <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Admin Panel</span></a>
+      {% endif %}
+    </nav>
+    <div class="sb-footer">
+      <a href="{% url 'quiz:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-l">
+        <div class="hamburger" id="hamburger"><i class="bi bi-list"></i></div>
+        <div class="page-icon"><i class="bi bi-trophy-fill"></i></div>
+        <h1>Leaderboard</h1>
+        <span class="sep">|</span>
+        <span class="sub">Rankings</span>
+      </div>
+      <div class="topbar-r">
+        <a href="{% url 'quiz:dashboard' %}" class="topbar-icon-btn" title="Dashboard"><i
+            class="bi bi-grid-1x2-fill"></i></a>
+        <a href="{% url 'quiz:profile' %}" class="topbar-chip">
+          <div class="av">{{ request.student.username|first|upper }}</div>
+          <span>{{ request.student.get_full_name|default:request.student.username }}</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="content">
+
+      {% if messages %}
+      <ul class="msgs">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">
+          {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+          {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill"></i>
+          {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+          {{ message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-inner">
+          <div class="ph-text">
+            <div class="ph-badge"><i class="bi bi-stars"></i> Hall of Fame</div>
+            <h2>🏆 Exam Leaderboard</h2>
+            <p>Top performers ranked by score and speed. Beat your rivals and claim the top spot!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-card">
+        <label><i class="bi bi-funnel-fill" style="color:var(--orange);"></i> &nbsp;Filter by Quiz</label>
+        <form method="get" style="display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap;">
+          <select class="filter-select" name="quiz_id" id="quiz-filter">
+            <option value="">— Overall Leaderboard —</option>
+            {% for quiz in quizzes %}
+            <option value="{{ quiz.id }}" {% if selected_quiz and selected_quiz.id == quiz.id %}selected{% endif %}>{{
+              quiz.title }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn-orange"><i class="bi bi-arrow-right-circle-fill"></i> Apply</button>
+          {% if selected_quiz %}
+          <a href="{% url 'quiz:leaderboard' %}" class="btn-ghost"><i class="bi bi-x-circle"></i> Clear</a>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- Main grid -->
+      <div class="two-col">
+
+        <!-- Rankings table -->
+        <div class="sc">
+          <div class="sc-head">
+            <h5><i class="bi bi-trophy-fill"></i>
+              {% if selected_quiz %}{{ selected_quiz.title }}{% else %}Overall Rankings{% endif %}
+            </h5>
+            <span style="font-size:.75rem;color:var(--muted);">Top {{ rankings|length }} examinees</span>
+          </div>
+          <div class="sc-body" style="overflow-x: auto;">
+            {% if rankings %}
+            <table class="lb-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Examinee</th>
+                  <th>Score %</th>
+                  <th>Time</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for entry in rankings %}
+                <tr {% if entry.user == request.student %}class="me-row" {% endif %}>
+                  <td>
+                    <div
+                      class="rank-badge {% if entry.rank == 1 %}rank-1{% elif entry.rank == 2 %}rank-2{% elif entry.rank == 3 %}rank-3{% else %}rank-other{% endif %}">
+                      {% if entry.rank <= 3 %} {% if entry.rank == 1 %}🥇{% elif entry.rank == 2 %}🥈{% else %}🥉{% endif %}
+                        {% else %} {{ entry.rank }} {% endif %} </div>
+                  </td>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-av">{{ entry.user.username|first|upper }}</div>
+                      <div>
+                        <div class="user-name">{{ entry.user.get_full_name|default:entry.user.username }}
+                          {% if entry.user == request.student %}<span
+                            style="font-size:.65rem;background:var(--orange-soft);color:var(--orange-dark);padding:2px 7px;border-radius:10px;margin-left:4px;">You</span>{% endif %}
+                        </div>
+                        {% if entry.quiz %}<div style="font-size:.7rem;color:var(--muted);">{{
+                          entry.quiz.title|truncatechars:28 }}</div>{% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="pct-val">{{ entry.percentage }}%</span></td>
+                  <td>
+                    <span class="time-val">
+                      <i class="bi bi-clock"></i>
+                      {% with mins=entry.time_taken|divisibleby:60 %}
+                      {{ entry.time_taken|floatformat:0 }}s
+                      {% endwith %}
+                    </span>
+                  </td>
+                  <td><span class="score-val">{{ entry.score }} pts</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+              <i class="bi bi-trophy"></i>
+              <p>No rankings yet. Complete an exam to appear on the leaderboard!</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Side panels -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <!-- Top Accuracy -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-bullseye"></i> Top Accuracy</h5>
+            </div>
+            <div class="mini-list">
+              {% if top_accuracy %}
+              {% for entry in top_accuracy %}
+              <div class="mini-item">
+                <span class="mini-rank">{{ forloop.counter }}</span>
+                <div class="mini-av">{{ entry.user.username|first|upper }}</div>
+                <div class="mini-info">
+                  <div class="mini-name">{{ entry.user.username }}</div>
+                  <div class="mini-sub">{{ entry.quiz.title|truncatechars:22 }}</div>
+                </div>
+                <span class="mini-val">{{ entry.accuracy }}%</span>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="empty-state" style="padding:24px;"><i class="bi bi-bullseye"></i>
+                <p>No data yet.</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Fastest -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-lightning-charge-fill"></i> Fastest Completions</h5>
+            </div>
+            <div class="mini-list">
+              {% if fastest %}
+              {% for entry in fastest %}
+              <div class="mini-item">
+                <span class="mini-rank">{{ forloop.counter }}</span>
+                <div class="mini-av">{{ entry.user.username|first|upper }}</div>
+                <div class="mini-info">
+                  <div class="mini-name">{{ entry.user.username }}</div>
+                  <div class="mini-sub">{{ entry.quiz.title|truncatechars:22 }}</div>
+                </div>
+                <span class="mini-val" style="color:var(--muted);font-size:.78rem;">{{ entry.time_taken }}s</span>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="empty-state" style="padding:24px;"><i class="bi bi-lightning-charge"></i>
+                <p>No data yet.</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const btn = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btn && sidebar && overlay) {
+      btn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      });
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      });
+    }
+  </script>
+
+</body>
+
+</html>

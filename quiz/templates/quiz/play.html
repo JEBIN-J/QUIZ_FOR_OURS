@@ -1,0 +1,425 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block title %}Playing: {{ quiz.title }}{% endblock %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<a href="{% url 'quiz:dashboard' %}" class="float-back" id="btn-back-quiz" title="Exit Exam">
+    <span class="back-icon"><i class="fa-solid fa-arrow-left"></i></span> Exit Exam
+</a>
+
+<style>
+    .question-slide {
+        display: none;
+    }
+
+    .question-slide.active {
+        display: block !important;
+    }
+
+    /* Perfect Premium Question Palette Grid */
+    .question-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .grid-btn {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .grid-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .grid-btn.btn-unanswered {
+        background-color: #f8fafc;
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+    }
+
+    .grid-btn.btn-answered {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .grid-btn.btn-review {
+        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    .grid-btn.btn-active {
+        box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.2), 0 4px 10px rgba(255, 107, 0, 0.2);
+        border: 2px solid var(--primary-orange, #FF6B00);
+        transform: scale(1.08);
+        z-index: 2;
+    }
+
+    /* Premium Control Buttons */
+    .quiz-controls .btn {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .quiz-controls .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .quiz-controls .btn-secondary {
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .quiz-controls .btn-secondary:hover {
+        border-color: #cbd5e1;
+        background-color: #f8fafc;
+    }
+
+    .quiz-controls .btn-primary {
+        background: linear-gradient(135deg, var(--primary-orange, #FF6B00) 0%, #e66000 100%);
+        border: none;
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+    }
+
+    .quiz-controls .btn-primary:hover {
+        box-shadow: 0 6px 15px rgba(255, 107, 0, 0.4);
+    }
+
+    /* Premium Metric Pills */
+    .metric-pill-premium {
+        flex: 1;
+        min-width: 120px;
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 20px 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-pill-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .metric-pill-premium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+    }
+
+    .metric-pill-premium.answered::before {
+        background: linear-gradient(90deg, #10B981, #059669);
+    }
+
+    .metric-pill-premium.review::before {
+        background: linear-gradient(90deg, #6366F1, #4F46E5);
+    }
+
+    .metric-pill-premium.unanswered::before {
+        background: linear-gradient(90deg, #9CA3AF, #6B7280);
+    }
+
+    /* Final Submit Button */
+    .final-submit-premium {
+        flex: 1;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+        border: none !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .final-submit-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Formatter-safe classes */
+    .quiz-header-title { font-size: 24px; font-weight: 700; color: var(--text-white); margin-bottom: 5px; }
+    .quiz-header-pass { color: var(--text-muted); font-size: 14px; margin: 0; }
+    .question-title-text { margin-bottom: 30px; font-size: 20px; line-height: 1.6; color: var(--text-white); }
+    .choice-text { font-size: 16px; font-weight: 500; line-height: 1.4; color: var(--text-white); }
+    .option-item { display: flex; align-items: center; gap: 15px; padding: 16px 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color); background: transparent; }
+    .question-counter-text { color: var(--primary-orange); font-size: 18px; }
+    .option-radio { cursor: pointer; margin: 0; width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary-orange); }
+</style>
+
+<div class="container" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <div class="quiz-layout" style="display: flex; gap: 25px; min-height: calc(100vh - 150px); flex-wrap: wrap;">
+
+        <!-- LEFT SIDEBAR: QUESTION PALETTE -->
+        <div class="sidebar-column" style="flex: 1 1 250px; max-width: 300px;">
+            <div style="position: sticky; top: 100px; display: flex; flex-direction: column; gap: 20px;">
+                
+                <!-- Summary Stats Box -->
+                <div class="glass-card" style="padding: 20px;">
+                    <div class="metrics-pills-list"
+                        style="display: flex; gap: 4px; margin-bottom: 15px;">
+                        <div class="metric-pill-premium answered" style="flex: 1; background: var(--card-bg); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px; padding: 6px 2px; text-align: center; min-width: 0;">
+                            <div class="metric-pill-val" id="pill-answered-val"
+                                style="color: var(--success-green, #10B981); font-size: 16px; font-weight: 800; margin-bottom: 2px;">0</div>
+                            <div class="metric-pill-lbl"
+                                style="color: #64748b; font-size: 8px; font-weight: 700; letter-spacing: 0px; text-transform: uppercase;">
+                                Ans</div>
+                        </div>
+
+                        <div class="metric-pill-premium review" style="flex: 1; background: var(--card-bg); border: 1px solid rgba(99,102,241,0.2); border-radius: 6px; padding: 6px 2px; text-align: center; min-width: 0;">
+                            <div class="metric-pill-val" id="pill-review-val"
+                                style="color: #6366F1; font-size: 16px; font-weight: 800; margin-bottom: 2px;">0</div>
+                            <div class="metric-pill-lbl"
+                                style="color: #64748b; font-size: 8px; font-weight: 700; letter-spacing: 0px; text-transform: uppercase;">
+                                Rev</div>
+                        </div>
+
+                        <div class="metric-pill-premium unanswered" style="flex: 1; background: var(--card-bg); border: 1px solid rgba(148,163,184,0.2); border-radius: 6px; padding: 6px 2px; text-align: center; min-width: 0;">
+                            <div class="metric-pill-val" id="pill-unanswered-val"
+                                style="color: #94a3b8; font-size: 16px; font-weight: 800; margin-bottom: 2px;">{{ questions|length }}</div>
+                            <div class="metric-pill-lbl"
+                                style="color: #64748b; font-size: 8px; font-weight: 700; letter-spacing: 0px; text-transform: uppercase;">
+                                Unans</div>
+                        </div>
+                    </div>
+
+                    <div class="review-metrics-progress-bar"
+                        style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 0px; margin-bottom: 15px; background: #f1f5f9; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                        <div class="progress-segment answered" id="progress-segment-answered"
+                            style="background: linear-gradient(90deg, #10B981, #059669); width: 0%; transition: width 0.3s ease;">
+                        </div>
+                        <div class="progress-segment review" id="progress-segment-review"
+                            style="background: linear-gradient(90deg, #6366F1, #4F46E5); width: 0%; transition: width 0.3s ease;">
+                        </div>
+                        <div class="progress-segment unanswered" id="progress-segment-unanswered"
+                            style="background: transparent; width: 100%; transition: width 0.3s ease;"></div>
+                    </div>
+                    
+                    <button type="button" form="quiz-play-form" id="final-submit-btn" class="final-submit-premium" style="width: 100%; padding: 12px; font-size: 14px; gap: 6px; display: none;">
+                        <i class="fa-solid fa-circle-check"></i> Finalize Submission
+                    </button>
+                </div>
+                
+                <!-- Question Palette Box -->
+                <div class="glass-card" style="padding: 20px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px; text-align: center;">Question Palette</h3>
+
+                <!-- Color Legend -->
+                <div class="legend-container" style="margin-bottom: 20px; font-size: 13px; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div
+                            style="width: 16px; height: 16px; border-radius: 4px; background-color: var(--success-green); flex-shrink: 0;">
+                        </div>
+                        <span>Answered</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div
+                            style="width: 16px; height: 16px; border-radius: 4px; background-color: #6366F1; flex-shrink: 0;">
+                        </div>
+                        <span>Marked for Review</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div
+                            style="width: 16px; height: 16px; border-radius: 4px; background-color: #D1D5DB; border: 1px solid #9CA3AF; flex-shrink: 0;">
+                        </div>
+                        <span>Unanswered</span>
+                    </div>
+                </div>
+
+                <hr style="border: 0; height: 1px; background: var(--border-color); margin: 15px 0;">
+
+                <!-- Question Grid -->
+                <div class="question-grid">
+                    {% for question in questions %}
+                    <button type="button" class="grid-btn btn-unanswered" id="grid-btn-{{ forloop.counter0 }}" data-q-index="{{ forloop.counter0 }}" title="Question {{ forloop.counter }}">
+{{ forloop.counter }}
+</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- RIGHT MAIN CONTENT AREA -->
+        <div class="main-column" style="flex: 3 1 600px;">
+            <script>
+                window.sectionsData = {{ sections_data_json|safe }};
+            </script>
+            
+            {% if has_sections %}
+            <!-- Section Tabs -->
+            <div class="section-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px;">
+                {% for sec in quiz.sections.all|dictsort:"order" %}
+                <button type="button" class="section-tab-btn" data-sec-id="{{ sec.id }}" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap;">
+                    {{ sec.title }} {% if sec.time_limit %}<span style="font-size:12px; opacity:0.8;">({{ sec.time_limit }}m)</span>{% endif %}
+                </button>
+                {% endfor %}
+                {% if has_general_questions %}
+                <button type="button" class="section-tab-btn" data-sec-id="general" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap;">
+                    General
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Quiz Header & Timer -->
+            <div class="glass-card" style="padding: 20px 25px; margin-bottom: 20px;">
+                <div class="quiz-play-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2 class="quiz-header-title">{{ quiz.title }}</h2>
+                        <p class="quiz-header-pass">Pass requirement: {{ quiz.passing_score }}%</p>
+                    </div>
+
+                    <div class="timer-box" id="quiz-timer-container" data-time-limit="{{ quiz.time_limit }}" data-quiz-id="{{ quiz.id }}"
+                        style="display: none; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; background: rgba(255,107,0,0.1); color: var(--primary-orange); padding: 10px 20px; border-radius: 12px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span id="timer-val">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Timer Visual Progress Bar -->
+                <div class="timer-bar-container" id="timer-bar-wrapper"
+                    style="display: none; height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; margin-top: 15px; overflow: hidden;">
+                    <div class="timer-bar-fill" id="timer-bar-fill"
+                        style="height: 100%; background: var(--primary-orange); width: 100%; transition: width 1s linear, background-color 0.3s;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Form -->
+            <form method="POST" action="{% url 'quiz:submit' quiz.id %}" id="quiz-play-form">
+                {% csrf_token %}
+
+                <!-- Question Display -->
+                <div class="glass-card" style="padding: 30px; margin-bottom: 20px;">
+                    {% for question in questions %}
+                    <div class="question-slide" id="slide-{{ forloop.counter0 }}">
+                        <div class="question-index"
+                            style="margin-bottom: 25px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <span>Question <span class="current-idx question-counter-text">{{ forloop.counter }}</span>
+                                of <span class="total-q-count">{{ questions|length }}</span></span>
+                            <span
+                                style="font-size: 13px; text-transform: uppercase; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;">Points:
+                                {{ question.points }}</span>
+                        </div>
+
+                        <h3 class="question-text question-title-text">{{ question.text }}</h3>
+
+                        <div class="options-list" style="display: flex; flex-direction: column; gap: 15px;">
+                            {% for choice in question.choices.all %}
+                            <label class="option-item">
+                                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}"
+                                    class="option-radio"
+                                    style="margin: 0;">
+                                <span
+                                    class="choice-text">{{ choice.text }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Navigation & Action Buttons -->
+                <div class="quiz-controls"
+                    style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                    <button type="button" class="btn btn-secondary" id="prev-btn"
+                        style="display: none; padding: 12px 24px; font-weight: 600;">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 8px;"></i> Previous
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" id="mark-review-btn"
+                        style="padding: 12px 24px; font-weight: 600;">
+                        <i class="fa-solid fa-bookmark" style="margin-right: 8px;"></i> Mark for Review
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" id="clear-response-btn"
+                        style="padding: 12px 24px; font-weight: 600;">
+                        <i class="fa-solid fa-eraser" style="margin-right: 8px;"></i> Clear Response
+                    </button>
+
+                    <div style="margin-left: auto; display: flex; gap: 12px;">
+                        <button type="button" class="btn btn-primary" id="next-btn"
+                            style="padding: 12px 30px; font-weight: 600;">
+                            Next <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-primary" id="submit-btn"
+                            style="display: none; background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 12px 30px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                            Submit Quiz <i class="fa-solid fa-check" style="margin-left: 8px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS - Hidden by Default, active class toggles visibility -->
+<div class="confirm-dialog-overlay" id="reset-confirm-modal">
+    <div class="confirm-dialog-box">
+        <div class="confirm-dialog-icon" style="color: var(--danger-red);"><i class="fa-solid fa-eraser"></i></div>
+        <h4 class="confirm-dialog-title">Clear Response?</h4>
+        <p class="confirm-dialog-text">Are you sure you want to clear your answer for this question?</p>
+        <div class="confirm-dialog-buttons">
+            <button type="button" class="btn btn-danger" id="confirm-reset-yes-btn">Yes, Clear</button>
+            <button type="button" class="btn btn-secondary" id="confirm-reset-no-btn">No, Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="confirm-dialog-overlay" id="submit-confirm-modal">
+    <div class="confirm-dialog-box">
+        <div class="confirm-dialog-icon" style="color: var(--primary-orange);"><i class="fa-solid fa-circle-info"></i>
+        </div>
+        <h4 class="confirm-dialog-title">Finalize Submission?</h4>
+        <p class="confirm-dialog-text">Are you sure you want to submit your exam? This action is irreversible and your
+            answers will be evaluated immediately.</p>
+        <div class="confirm-dialog-buttons">
+            <button type="button" class="btn btn-primary" id="confirm-submit-yes-btn">Yes, Submit</button>
+            <button type="button" class="btn btn-secondary" id="confirm-submit-no-btn">No, Cancel</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

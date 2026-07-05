@@ -1,0 +1,77 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Sample Exam: {{ quiz.title }}{% endblock %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<a href="{% url 'quiz:welcome' %}" class="float-back" id="btn-back-demo" title="Exit Demo">
+    <span class="back-icon"><i class="fa-solid fa-arrow-left"></i></span> Exit Demo
+</a>
+
+<div class="glass-card" style="position: relative; max-width: 800px; margin: 0 auto;">
+    
+    <!-- Active Quiz Header & Timer -->
+    <div class="quiz-play-header">
+        <div>
+            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-white);">{{ quiz.title }} <span style="font-size: 14px; font-weight: 500; color: var(--primary-orange); background: rgba(255, 107, 0, 0.08); padding: 4px 8px; border-radius: 4px; margin-left: 8px;">Sample Demo</span></h2>
+            <p style="color: var(--text-muted); font-size: 13px;">This is a sandbox test. Only the first {{ questions|length }} questions are shown.</p>
+        </div>
+        
+        <div class="timer-box" id="quiz-timer-container" data-time-limit="{{ demo_time_limit }}" data-quiz-id="{{ quiz.id }}">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span id="timer-val">00:00</span>
+        </div>
+    </div>
+
+    <!-- Timer Visual Progress Bar -->
+    <div class="timer-bar-container">
+        <div class="timer-bar-fill" id="timer-bar-fill"></div>
+    </div>
+
+    <!-- Questions Form -->
+    <form method="POST" action="{% url 'quiz:submit_demo' quiz.id %}" id="quiz-play-form">
+        {% csrf_token %}
+
+        {% for question in questions %}
+            <div class="question-slide" id="slide-{{ forloop.counter0 }}">
+                <div class="question-index">
+                    Question <span class="current-idx">{{ forloop.counter }}</span> of {{ questions|length }} 
+                    <span style="float: right; color: var(--text-muted); font-size: 12px; text-transform: uppercase;">
+                        Points: {{ question.points }}
+                    </span>
+                </div>
+                
+                <h3 class="question-text">{{ question.text }}</h3>
+                
+                <div class="options-list">
+                    {% for choice in question.choices.all %}
+                        <label class="option-item">
+                            <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" class="option-radio">
+                            <span style="font-size: 16px; font-weight: 500;">{{ choice.text }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Navigation Buttons -->
+        <div class="quiz-controls">
+            <button type="button" class="btn btn-secondary" id="prev-btn" style="display: none;">
+                <i class="fa-solid fa-arrow-left"></i> Previous
+            </button>
+            
+            <div style="margin-left: auto;">
+                <button type="button" class="btn btn-primary" id="next-btn">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                
+                <button type="submit" class="btn btn-primary" id="submit-btn" style="display: none; background-color: var(--success-green); border-color: var(--success-green); color: var(--bg-main);">
+                    Submit Sample <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

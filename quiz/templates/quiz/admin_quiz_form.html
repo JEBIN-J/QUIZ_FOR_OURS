@@ -1,0 +1,537 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} · FJ Brothers Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --sidebar-bg: #ffffff;
+      --sidebar-width: 260px;
+      --accent: #f59e0b;
+      --body-bg: #fff8f0;
+      --card-bg: #ffffff;
+      --card-radius: 18px;
+      --text-primary: #111111;
+      --text-muted: #6b7280;
+      --border: #f0e8d8;
+      --shadow-sm: 0 1px 4px rgba(245,158,11,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; font-family:'Inter',system-ui,sans-serif; }
+    body { background:var(--body-bg); color:var(--text-primary); display:flex; min-height:100vh; }
+
+    .sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); border-right:2px solid var(--border); min-height:100vh; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:100; box-shadow:4px 0 20px rgba(245,158,11,0.06); will-change:transform; transform:translateZ(0); }
+    .sidebar-brand { display:flex; align-items:center; gap:12px; padding:28px 22px 24px; border-bottom:2px solid var(--border); }
+    .sidebar-brand .brand-icon { width:40px; height:40px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:12px; display:grid; place-items:center; font-size:1.25rem; color:#fff; }
+    .sidebar-brand .brand-text { font-size:1.25rem; font-weight:800; color:#111; }
+    .sidebar-brand .brand-text span { color:var(--accent); }
+    .sidebar-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); padding:20px 22px 8px; }
+    .sidebar-nav { padding:8px 12px; flex:1; }
+    .sidebar-nav a { display:flex; align-items:center; gap:12px; padding:10px 14px; color:#555; font-size:.875rem; font-weight:500; border-radius:10px; text-decoration:none; transition:all .2s; margin-bottom:2px; }
+    .sidebar-nav a i { font-size:1.1rem; width:20px; text-align:center; }
+    .sidebar-nav a:hover { background:var(--accent-soft); color:var(--accent-dark); }
+    .sidebar-nav a.active { background:linear-gradient(135deg,rgba(245,158,11,0.22),rgba(239,68,68,0.12)); color:var(--accent); font-weight:600; border-left:3px solid var(--accent); }
+    .sidebar-footer { padding:16px 12px; border-top:2px solid var(--border); }
+    .sidebar-footer a { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#888; font-size:.875rem; border-radius:10px; text-decoration:none; transition:all .2s; }
+    .sidebar-footer a:hover { background:rgba(239,68,68,0.12); color:#ef4444; }
+
+    .main-wrapper { margin-left:var(--sidebar-width); flex:1; min-height:100vh; display:flex; flex-direction:column; background:var(--body-bg); }
+    .topbar { background:var(--card-bg); border-bottom:2px solid var(--border); padding:0 28px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm); width: 100%; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-left h4 { font-size:1.1rem; font-weight:700; margin:0; }
+    .topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-badge { background:var(--black,#111); color:var(--accent); font-size:.7rem; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:.4px; }
+    .topbar-admin { display:flex; align-items:center; gap:10px; background:var(--body-bg); border:1px solid var(--border); padding:7px 14px; border-radius:50px; font-size:.85rem; font-weight:600; }
+    .topbar-admin .avatar { width:32px; height:32px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:50%; display:grid; place-items:center; font-size:.8rem; font-weight:700; color:#fff; }
+
+    .content-area { padding:28px; flex:1; display:flex; align-items:flex-start; justify-content:center; width: 100%; }
+
+    .form-card { background:var(--card-bg); border-radius:var(--card-radius); border:1px solid var(--border); box-shadow:var(--shadow-sm); width:100%; max-width:800px; overflow:hidden; }
+    .form-card-header { padding:22px 28px 18px; border-bottom:2px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .form-card-header h2 { font-size:1.1rem; font-weight:700; margin:0; }
+    .form-card-header i { color:var(--accent); font-size:1.2rem; }
+    .form-card-body { padding:28px; }
+
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; font-size:.82rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:7px; }
+    .form-group input[type=text],
+    .form-group input[type=number],
+    .form-group input[type=datetime-local],
+    .form-group textarea,
+    .form-group select {
+      width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+      font-size:.9rem; font-family:inherit; color:var(--text-primary); background:#fff;
+      outline:none; transition:border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus, .form-group select:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(245,158,11,.12); }
+    .form-group textarea { min-height:90px; resize:vertical; }
+    .form-help { font-size:.78rem; color:var(--text-muted); margin-top:5px; }
+
+    .icon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(85px,1fr)); gap:10px; margin-top:10px; }
+    .icon-option { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:12px 6px; border:2px solid var(--border); border-radius:10px; cursor:pointer; transition:all .15s; font-size:.7rem; font-weight: 500; color:var(--text-muted); text-align:center; }
+    .icon-option i { font-size:1.4rem; margin-bottom:2px; }
+    .icon-option:hover, .icon-option.selected { border-color:var(--accent); background:rgba(245,158,11,.07); color:var(--accent); }
+    .icon-option input[type=radio] { display:none; }
+
+    .btn-row { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .btn-primary-cta { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border:none; padding:11px 24px; border-radius:10px; font-size:.875rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:opacity .2s; box-shadow:0 4px 12px rgba(245,158,11,0.3); }
+    .btn-primary-cta:hover { opacity:.9; color:#fff; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:10px 20px; border-radius:10px; font-size:.875rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all .2s; }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+    .alert-msg { padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:.875rem; display:flex; align-items:center; gap:8px; }
+    .alert-error { background:rgba(239,68,68,.1); color:#dc2626; border:1px solid rgba(239,68,68,.2); }
+
+    @media (max-width:991px) {
+      .sidebar { width:64px; overflow:hidden; }
+      .sidebar .sidebar-brand .brand-text, .sidebar .sidebar-section-label, .sidebar-nav a span, .sidebar-footer a span { display:none; }
+      .sidebar-brand { padding:20px 12px; justify-content:center; }
+      .sidebar-nav a { justify-content:center; padding:12px 10px; }
+      .main-wrapper { margin-left:64px; }
+    }
+  </style>
+
+<style>
+@keyframes rotate-border {
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animated-brand-border {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(234,88,12,0.2);
+}
+.animated-brand-border::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 500%;
+  background: conic-gradient(transparent, transparent, transparent, #ea580c);
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  animation: rotate-border 2.5s linear infinite;
+  z-index: 0;
+}
+.animated-brand-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 0;
+}
+.animated-brand-border > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand animated-brand-border" style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+      <a href="{% url 'quiz:admin_categories_list' %}"><i class="bi bi-tags-fill"></i> <span>Categories</span></a>
+      <a href="{% url 'quiz:admin_add_quiz' %}" class="active"><i class="bi bi-file-earmark-plus-fill"></i> <span>Create Quiz</span></a>
+      <a href="{% url 'quiz:admin_users_list' %}"><i class="bi bi-people-fill"></i> <span>Users</span></a>
+      <a href="{% url 'quiz:admin_reports' %}"><i class="bi bi-bar-chart-fill"></i> <span>Reports</span></a>
+      <a href="{% url 'quiz:leaderboard' %}"><i class="bi bi-trophy-fill"></i> <span>Leaderboard</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{% url 'quiz:logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <i class="bi bi-tags-fill text-warning"></i>
+        <h4>{{ title }}</h4>
+        <span style="margin:0 4px;color:#d1d5db;">›</span>
+        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">
+          {% if category %}Edit Existing{% else %}New Category{% endif %}
+        </span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-badge"><i class="bi bi-shield-fill-check me-1"></i>Admin</span>
+        <div class="topbar-admin">
+          <div class="avatar">{{ request.user.username|first|upper }}</div>
+          <span>{{ request.user.username }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+    <div class="form-card" style="width:100%; max-width:800px; margin:0 auto; padding:0; background:var(--card-bg);">
+        <div class="form-card-header">
+            <i class="fa-solid fa-file-signature"></i>
+            <h2>{{ title }}</h2>
+          </div>
+          <div class="form-card-body">
+        
+        <form method="POST" id="admin-quiz-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert-msg alert-error" style="background: rgba(213, 0, 0, 0.08); border: 1px solid var(--danger-red); color: var(--danger-red); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                {% for error in form.non_field_errors %}
+                <p style="margin: 0; font-size: 14px;">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Title & Description -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.title.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Exam Conditions Formset -->
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Exam Conditions & Rules</h4>
+            <div id="condition-formset-container">
+                {{ condition_formset.management_form }}
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 13px;">Add specific rules or conditions that will be shown to the user on the Overview page before starting the exam.</div>
+                
+                {% for cform in condition_formset %}
+                <div class="condition-form-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px;">
+                    {{ cform.id }}
+                    {{ cform.order }}
+                    <div style="flex-grow: 1;">
+                        {{ cform.text }}
+                        {% if cform.text.errors %}
+                        <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ cform.text.errors.0 }}</span>
+                        {% endif %}
+                        {% if cform.order.errors %}
+                        <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ cform.order.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    {% if condition_formset.can_delete %}
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer; white-space: nowrap;">
+                        {{ cform.DELETE }} Delete
+                    </label>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" id="add-condition-btn" style="background: transparent; border: 1px dashed var(--primary-orange); color: var(--primary-orange); padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 25px;"><i class="fa-solid fa-plus" style="margin-right: 5px;"></i> Add Another Condition</button>
+
+            <!-- Template for new condition form -->
+            <div id="empty-condition-form-template" style="display: none;">
+                <div class="condition-form-row" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px;">
+                    {{ condition_formset.empty_form.id }}
+                    {{ condition_formset.empty_form.order }}
+                    <div style="flex-grow: 1;">
+                        {{ condition_formset.empty_form.text }}
+                    </div>
+                    {% if condition_formset.can_delete %}
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer; white-space: nowrap;">
+                        {{ condition_formset.empty_form.DELETE }} Delete
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Subject & Category Grid -->
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Categorization & Course Mapping</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.category.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.subject.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Academic Year, Unit & Difficulty Grid -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.academic_year.id_for_label }}">{{ form.academic_year.label }}</label>
+                    {{ form.academic_year }}
+                    {% if form.academic_year.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.academic_year.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.unit.id_for_label }}">{{ form.unit.label }}</label>
+                    {{ form.unit }}
+                    {% if form.unit.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.unit.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.difficulty.id_for_label }}">{{ form.difficulty.label }}</label>
+                    {{ form.difficulty }}
+                    {% if form.difficulty.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.difficulty.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Limits & Rules: Duration, Passing Score, Max Attempts -->
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Scoring, Attempts & Timing</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.duration.id_for_label }}">{{ form.duration.label }} (mins)</label>
+                    {{ form.duration }}
+                    {% if form.duration.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.duration.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.passing_score.id_for_label }}">{{ form.passing_score.label }} (%)</label>
+                    {{ form.passing_score }}
+                    {% if form.passing_score.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.passing_score.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.max_attempts.id_for_label }}">{{ form.max_attempts.label }}</label>
+                    {{ form.max_attempts }}
+                    {% if form.max_attempts.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.max_attempts.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Negative Marking Configuration -->
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; margin-bottom: 25px; background: rgba(255,107,0,0.02); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                    <label class="form-checkbox-container" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                        {{ form.negative_marking }}
+                        <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{ form.negative_marking.label }}</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.negative_marks_per_question.id_for_label }}">{{ form.negative_marks_per_question.label }}</label>
+                    {{ form.negative_marks_per_question }}
+                    {% if form.negative_marks_per_question.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.negative_marks_per_question.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Shuffling Toggles -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                <label class="form-checkbox-container" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                    {{ form.shuffle_questions }}
+                    <span style="font-size: 14px; color: var(--text-primary);">{{ form.shuffle_questions.label }}</span>
+                </label>
+
+                <label class="form-checkbox-container" style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                    {{ form.shuffle_options }}
+                    <span style="font-size: 14px; color: var(--text-primary);">{{ form.shuffle_options.label }}</span>
+                </label>
+            </div>
+
+            <!-- Validity Dates & Availability Status -->
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Availability & Status</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.start_date.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.end_date.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.status.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quiz Sections / Parts Formset -->
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Quiz Sections (Optional Parts)</h4>
+            <div style="margin-bottom: 30px;">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Add optional sections to divide this quiz into timed parts (e.g., Options, Aptitude).</p>
+                
+                {{ section_formset.management_form }}
+                <div id="section-formset-container" style="display: flex; flex-direction: column; gap: 20px;">
+                    {% for sform in section_formset %}
+                        <div class="section-form-row" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 16px; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative;">
+                            {{ sform.id }}
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--primary-orange);"><i class="bi bi-layout-text-sidebar-reverse"></i> Section Setup</h5>
+                                {% if section_formset.can_delete %}
+                                <div style="{% if not sform.instance.pk %}display: none;{% endif %}">
+                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer;">
+                                        {{ sform.DELETE }} Remove Section
+                                    </label>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div style="grid-column: 1 / -1;">
+                                    <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Section Title</label>
+                                    {{ sform.title }}
+                                </div>
+                                <div style="grid-column: 1 / -1;">
+                                    <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Description (Optional)</label>
+                                    {{ sform.description }}
+                                </div>
+                                <div>
+                                    <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Time Limit (Minutes)</label>
+                                    {{ sform.time_limit }}
+                                </div>
+                                <div>
+                                    <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Display Order</label>
+                                    {{ sform.order }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <button type="button" id="add-section-btn" style="margin-top: 20px; font-size: 13.5px; font-weight: 700; padding: 12px 20px; border-radius: 10px; background: rgba(245,158,11,0.08); color: var(--primary-orange); border: 2px dashed var(--primary-orange); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                    <i class="bi bi-plus-lg"></i> Add another Section
+                </button>
+                
+                <!-- Hidden empty form template -->
+                <div id="empty-form-template" style="display: none;">
+                    <div class="section-form-row" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 16px; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; margin-top: 20px;">
+                        {{ section_formset.empty_form.id }}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                            <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--primary-orange);"><i class="bi bi-layout-text-sidebar-reverse"></i> Section Setup</h5>
+                            {% if section_formset.can_delete %}
+                            <div style="display: none;">
+                                <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer;">
+                                    {{ section_formset.empty_form.DELETE }} Remove Section
+                                </label>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div style="grid-column: 1 / -1;">
+                                <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Section Title</label>
+                                {{ section_formset.empty_form.title }}
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Description (Optional)</label>
+                                {{ section_formset.empty_form.description }}
+                            </div>
+                            <div>
+                                <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Time Limit (Minutes)</label>
+                                {{ section_formset.empty_form.time_limit }}
+                            </div>
+                            <div>
+                                <label style="font-size:13px; font-weight:600; color: var(--text-muted); margin-bottom: 8px; display: block;">Display Order</label>
+                                {{ section_formset.empty_form.order }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Section Formset Logic
+                        const addSecBtn = document.getElementById('add-section-btn');
+                        const secContainer = document.getElementById('section-formset-container');
+                        const secTotalFormsInput = document.querySelector('input[name="sections-TOTAL_FORMS"]');
+                        const secEmptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+                        
+                        if (addSecBtn && secContainer && secTotalFormsInput) {
+                            addSecBtn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const currentFormCount = parseInt(secTotalFormsInput.value, 10);
+                                const newFormHtml = secEmptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+                                
+                                secContainer.insertAdjacentHTML('beforeend', newFormHtml);
+                                secTotalFormsInput.value = currentFormCount + 1;
+                            });
+                        }
+
+                        // Condition Formset Logic
+                        const addCondBtn = document.getElementById('add-condition-btn');
+                        const condContainer = document.getElementById('condition-formset-container');
+                        const condTotalFormsInput = document.querySelector('input[name="conditions-TOTAL_FORMS"]');
+                        const condEmptyFormTemplate = document.getElementById('empty-condition-form-template').innerHTML;
+
+                        if (addCondBtn && condContainer && condTotalFormsInput) {
+                            addCondBtn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const currentFormCount = parseInt(condTotalFormsInput.value, 10);
+                                const newFormHtml = condEmptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+                                
+                                condContainer.insertAdjacentHTML('beforeend', newFormHtml);
+                                condTotalFormsInput.value = currentFormCount + 1;
+                            });
+                        }
+                    });
+                </script>
+            </div>
+
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+                <button type="submit" class="btn-primary-cta" id="btn-save-quiz" style="padding: 12px 30px;">
+                    <i class="fa-solid fa-circle-check"></i> Save Quiz arena
+                </button>
+                <a href="{% url 'quiz:admin_dashboard' %}" class="btn-outline" id="btn-cancel-quiz" style="padding: 12px 25px;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

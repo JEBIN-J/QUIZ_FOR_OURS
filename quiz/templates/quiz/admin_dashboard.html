@@ -1,0 +1,802 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard · FJ Brothers</title>
+  <meta name="description" content="FJ Brothers Admin Panel – manage quizzes, users, categories and track student performance.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+  <style>
+    :root {
+      --sidebar-bg: #ffffff;
+      --sidebar-border: #f0f0f0;
+      --sidebar-width: 260px;
+      --accent: #f59e0b;
+      --accent-dark: #d97706;
+      --accent-soft: rgba(245,158,11,0.10);
+      --black: #111111;
+      --body-bg: #fff8f0;
+      --card-bg: #ffffff;
+      --card-radius: 18px;
+      --text-primary: #111111;
+      --text-muted: #6b7280;
+      --border: #f0e8d8;
+      --shadow-sm: 0 1px 4px rgba(245,158,11,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(245,158,11,0.12);
+      --shadow-lg: 0 10px 32px rgba(245,158,11,0.14);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
+
+    body {
+      background: var(--body-bg);
+      color: var(--text-primary);
+    }
+
+    /* ══ SIDEBAR ══════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 2px solid var(--border);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+      transition: width .25s ease;
+      box-shadow: 4px 0 24px rgba(245,158,11,0.07);
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    /* Brand */
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 26px 22px 22px;
+      border-bottom: 2px solid var(--border);
+    }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #f59e0b, #111111);
+      border-radius: 14px;
+      display: grid; place-items: center;
+      font-size: 1.3rem; color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(245,158,11,0.40);
+    }
+    .brand-text {
+      font-size: 1.3rem; font-weight: 800;
+      color: var(--black); letter-spacing: -0.5px;
+    }
+    .brand-text span { color: var(--accent); }
+
+    /* Section label */
+    .sidebar-section-label {
+      font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.4px;
+      color: var(--accent);
+      padding: 20px 22px 8px;
+    }
+
+    /* Nav */
+    .sidebar-nav { padding: 8px 12px; flex: 1; overflow-y: auto; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px;
+      color: #555;
+      font-size: 0.875rem; font-weight: 500;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .2s ease;
+      margin-bottom: 2px;
+    }
+    .sidebar-nav a i { font-size: 1.1rem; width: 20px; text-align: center; color: #999; transition: color .2s; }
+    .sidebar-nav a:hover {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+    .sidebar-nav a:hover i { color: var(--accent); }
+    .sidebar-nav a.active {
+      background: linear-gradient(135deg, rgba(245,158,11,0.14), rgba(17,17,17,0.05));
+      color: var(--accent-dark);
+      font-weight: 700;
+      border-left: 3px solid var(--accent);
+    }
+    .sidebar-nav a.active i { color: var(--accent); }
+
+    /* Footer */
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 2px solid var(--border);
+    }
+    .sidebar-footer a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      color: #888;
+      font-size: 0.875rem; font-weight: 500;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .sidebar-footer a:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+
+    /* ══ MAIN ═════════════════════════════════════ */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      height: 100vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* ══ TOPBAR ═══════════════════════════════════ */
+    .topbar {
+      background: var(--card-bg);
+      border-bottom: 2px solid var(--border);
+      padding: 0 28px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 12px rgba(245,158,11,0.08);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-left h4 {
+      font-size: 1.05rem; font-weight: 800;
+      color: var(--black); margin: 0;
+    }
+    .topbar-left .breadcrumb-sep { color: var(--accent); font-weight: 700; margin: 0 4px; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+    .admin-badge {
+      background: var(--black);
+      color: var(--accent);
+      font-size: 0.72rem; font-weight: 700;
+      padding: 5px 12px; border-radius: 20px;
+      letter-spacing: 0.5px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .topbar-admin {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--accent-soft);
+      border: 1.5px solid rgba(245,158,11,0.3);
+      padding: 6px 14px; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 600; color: var(--black);
+    }
+    .topbar-admin .avatar {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #f59e0b, #111111);
+      border-radius: 50%; display: grid; place-items: center;
+      font-size: 0.8rem; font-weight: 800; color: #fff;
+    }
+
+    /* ══ CONTENT AREA ═════════════════════════════ */
+    .content-area { padding: 28px; }
+
+    /* ══ STAT CARDS ═══════════════════════════════ */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      padding: 22px 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--accent));
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .stat-body .stat-num {
+      font-size: 1.85rem; font-weight: 800;
+      line-height: 1.1; color: var(--black);
+    }
+    .stat-body .stat-label {
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-top: 2px;
+    }
+    .stat-body .stat-sub {
+      font-size: 0.74rem; color: var(--text-muted);
+      margin-top: 4px; display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Card colour variants */
+    .card-orange { --card-accent: #f59e0b; }
+    .card-orange .stat-icon { background: rgba(245,158,11,.12); color: #d97706; }
+    .card-black  { --card-accent: #111111; }
+    .card-black  .stat-icon { background: rgba(17,17,17,.08); color: #111111; }
+    .card-amber  { --card-accent: #fbbf24; }
+    .card-amber  .stat-icon { background: rgba(251,191,36,.12); color: #b45309; }
+    .card-warm   { --card-accent: #f97316; }
+    .card-warm   .stat-icon { background: rgba(249,115,22,.10); color: #ea580c; }
+
+    /* ══ SECTION CARDS ════════════════════════════ */
+    .section-card {
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .section-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 22px 14px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fffdf8;
+    }
+    .section-card-header h5 {
+      font-size: 1rem; font-weight: 700;
+      color: var(--black); margin: 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-card-header h5 i { color: var(--accent); }
+
+    /* ══ TABLE ════════════════════════════════════ */
+    .dash-table { width: 100%; border-collapse: collapse; }
+    .dash-table thead tr { background: #fffbf0; }
+    .dash-table thead th {
+      padding: 12px 18px;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted);
+      border-bottom: 1.5px solid var(--border);
+      white-space: nowrap;
+    }
+    .dash-table tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    .dash-table tbody tr:last-child { border-bottom: 0; }
+    .dash-table tbody tr:hover { background: #fffdf5; }
+    .dash-table td {
+      padding: 13px 18px;
+      font-size: 0.875rem; color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    /* Badges */
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 11px;
+      border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600;
+    }
+    .badge-published { background: rgba(16,185,129,.1); color: #059669; }
+    .badge-draft     { background: rgba(17,17,17,.07);  color: #444; }
+    .badge-archived  { background: rgba(249,115,22,.1); color: #ea580c; }
+    .badge-passed    { background: rgba(16,185,129,.1); color: #059669; }
+    .badge-failed    { background: rgba(239,68,68,.1);  color: #dc2626; }
+
+    /* Action buttons */
+    .tbl-action-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; border: none;
+      text-decoration: none; transition: all .15s;
+    }
+    .btn-edit  { background: rgba(245,158,11,.12); color: #b45309; }
+    .btn-edit:hover  { background: #f59e0b; color: #fff; }
+    .btn-del   { background: rgba(239,68,68,.10); color: #ef4444; }
+    .btn-del:hover   { background: #ef4444; color: #fff; }
+    .btn-add   { background: rgba(17,17,17,.07); color: #111; }
+    .btn-add:hover   { background: #111; color: #f59e0b; }
+    .btn-view  { background: rgba(245,158,11,.08); color: #d97706; }
+    .btn-view:hover  { background: #d97706; color: #fff; }
+
+    /* Primary CTA */
+    .btn-primary-cta {
+      background: linear-gradient(135deg, #f59e0b, #111111);
+      color: #fff; border: none;
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 4px 12px rgba(245,158,11,0.30);
+    }
+    .btn-primary-cta:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+
+    .btn-secondary-outline {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      padding: 7px 16px;
+      border-radius: 10px;
+      font-size: 0.82rem; font-weight: 600;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: all .15s;
+    }
+    .btn-secondary-outline:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+    /* Quick links */
+    .quicklink-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .quicklink-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 14px;
+      text-decoration: none;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      transition: all .2s; text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .quicklink-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 3px rgba(245,158,11,.12);
+    }
+    .quicklink-card i { font-size: 1.5rem; }
+    .quicklink-card span { font-size: 0.82rem; font-weight: 600; color: var(--black); }
+
+    /* Chart */
+    .chart-wrap { padding: 22px; }
+
+    /* User chip */
+    .user-chip { display: inline-flex; align-items: center; gap: 7px; }
+    .user-chip .u-avatar {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #f59e0b, #111);
+      border-radius: 50%; display: grid; place-items: center;
+      font-size: 0.7rem; font-weight: 700; color: #fff;
+    }
+    .user-chip span { font-size: 0.85rem; font-weight: 500; }
+
+    /* Percentage bar */
+    .pct-bar { display: flex; align-items: center; gap: 8px; }
+    .pct-bar .bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .pct-bar .bar-fill  { height: 100%; border-radius: 4px; }
+    .score-good  { color: #10b981; font-weight: 700; }
+    .score-mid   { color: #f59e0b; font-weight: 700; }
+    .score-bad   { color: #ef4444; font-weight: 700; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 42px 20px; color: var(--text-muted); }
+    .empty-state i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 10px; }
+
+    /* Alerts */
+    .alert-msg { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: .875rem; display: flex; align-items: center; gap: 8px; }
+    .alert-success { background: rgba(16,185,129,.08); color: #059669; border: 1px solid rgba(16,185,129,.2); }
+    .alert-error   { background: rgba(239,68,68,.08);  color: #dc2626; border: 1px solid rgba(239,68,68,.2); }
+
+    /* ══ RESPONSIVE ═══════════════════════════════ */
+    @media (max-width: 991px) {
+      .sidebar { width: 64px; overflow: hidden; }
+      .sidebar .sidebar-brand .brand-text,
+      .sidebar .sidebar-section-label,
+      .sidebar-nav a span,
+      .sidebar-footer a span { display: none; }
+      .sidebar-brand { padding: 20px 10px; justify-content: center; }
+      .sidebar-nav a { justify-content: center; padding: 12px 10px; }
+      .sidebar-footer a { justify-content: center; padding: 12px 10px; }
+      .main-wrapper { margin-left: 64px; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .content-area { padding: 16px; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+
+<style>
+@keyframes rotate-border {
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animated-brand-border {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(234,88,12,0.2);
+}
+.animated-brand-border::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 500%;
+  background: conic-gradient(transparent, transparent, transparent, #ea580c);
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  animation: rotate-border 2.5s linear infinite;
+  z-index: 0;
+}
+.animated-brand-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 0;
+}
+.animated-brand-border > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+</head>
+<body>
+
+  <!-- ═════════════ SIDEBAR ═════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand animated-brand-border" style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Management</div>
+      <a href="{% url 'quiz:admin_dashboard' %}" class="active">
+        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+      </a>
+      <a href="{% url 'quiz:admin_categories_list' %}">
+        <i class="bi bi-tags-fill"></i> <span>Categories</span>
+      </a>
+      <a href="{% url 'quiz:admin_add_quiz' %}">
+        <i class="bi bi-file-earmark-plus-fill"></i> <span>Create Quiz</span>
+      </a>
+      <a href="{% url 'quiz:admin_users_list' %}">
+        <i class="bi bi-people-fill"></i> <span>Users</span>
+      </a>
+      <a href="{% url 'quiz:admin_reports' %}">
+        <i class="bi bi-bar-chart-fill"></i> <span>Reports</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'quiz:logout' %}">
+        <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ═════════════ MAIN ═════════════ -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <i class="bi bi-speedometer2" style="color:var(--accent);font-size:1.1rem;"></i>
+        <h4>Admin Dashboard</h4>
+        <span class="breadcrumb-sep">›</span>
+        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">Overview</span>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge"><i class="bi bi-shield-fill-check"></i> Admin</span>
+        <div class="topbar-admin">
+          <div class="avatar">{{ request.user.username|first|upper }}</div>
+          <span>{{ request.user.username }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content-area">
+
+      {% for message in messages %}
+      <div class="alert-msg {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+
+      <!-- ── STAT CARDS ── -->
+      <div class="stat-grid">
+
+        <div class="stat-card card-orange">
+          <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ stats.total_users }}</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-sub"><i class="bi bi-person-fill"></i> Registered students</div>
+          </div>
+        </div>
+
+        <div class="stat-card card-black">
+          <div class="stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ stats.total_quizzes }}</div>
+            <div class="stat-label">Total Quizzes</div>
+            <div class="stat-sub"><i class="bi bi-circle-fill" style="font-size:.4rem;color:#10b981;"></i> {{ stats.active_quizzes }} published</div>
+          </div>
+        </div>
+
+        <div class="stat-card card-amber">
+          <div class="stat-icon"><i class="bi bi-patch-question-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ stats.total_questions }}</div>
+            <div class="stat-label">Questions</div>
+            <div class="stat-sub"><i class="bi bi-check2-circle"></i> across all quizzes</div>
+          </div>
+        </div>
+
+        <div class="stat-card card-warm">
+          <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">{{ stats.total_categories }}</div>
+            <div class="stat-label">Categories</div>
+            <div class="stat-sub"><i class="bi bi-tags-fill"></i> exam categories</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── TWO-COLUMN LAYOUT ── -->
+      <div class="row g-4 align-items-start">
+
+        <!-- LEFT: Recent Quizzes -->
+        <div class="col-lg-7">
+          <div class="section-card">
+            <div class="section-card-header">
+              <h5><i class="bi bi-journal-bookmark-fill"></i> Recent Quizzes</h5>
+              <div style="display:flex;gap:8px;">
+                <a href="{% url 'quiz:admin_add_quiz' %}" class="btn-primary-cta" id="btn-create-quiz">
+                  <i class="bi bi-plus-lg"></i> New Quiz
+                </a>
+                <a href="{% url 'quiz:admin_categories_list' %}" class="btn-secondary-outline" id="btn-all-categories">
+                  <i class="bi bi-tags"></i> Categories
+                </a>
+              </div>
+            </div>
+            <div class="section-card-body">
+              {% if recent_quizzes %}
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Quiz Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for quiz in recent_quizzes %}
+                  <tr>
+                    <td style="color:var(--text-muted);font-weight:600;">{{ forloop.counter }}</td>
+                    <td>
+                      <div style="font-weight:600;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ quiz.title }}</div>
+                      <div style="font-size:.74rem;color:var(--text-muted);">
+                        <i class="bi bi-clock me-1"></i>{{ quiz.duration }}m
+                        &nbsp;·&nbsp;
+                        <i class="bi bi-list-ol me-1"></i>{{ quiz.total_questions }} Qs
+                      </div>
+                    </td>
+                    <td><span style="font-size:.8rem;font-weight:500;color:var(--text-muted);">{{ quiz.category.name|default:"—" }}</span></td>
+                    <td>
+                      {% if quiz.status == 'Published' %}
+                        <span class="badge-pill badge-published"><i class="bi bi-circle-fill" style="font-size:.4rem;"></i> Published</span>
+                      {% elif quiz.status == 'Draft' %}
+                        <span class="badge-pill badge-draft"><i class="bi bi-circle-fill" style="font-size:.4rem;"></i> Draft</span>
+                      {% else %}
+                        <span class="badge-pill badge-archived"><i class="bi bi-circle-fill" style="font-size:.4rem;"></i> Archived</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                        <a href="{% url 'quiz:admin_edit_quiz' quiz.id %}" class="tbl-action-btn btn-edit" id="btn-edit-quiz-{{ quiz.id }}">
+                          <i class="bi bi-pencil-fill"></i> Edit
+                        </a>
+                        <a href="{% url 'quiz:admin_quiz_questions_list' quiz.id %}" class="tbl-action-btn btn-add" id="btn-manage-q-{{ quiz.id }}" title="Manage Questions">
+                          <i class="bi bi-list-ul"></i> Manage Qs
+                        </a>
+                        <form method="post" action="{% url 'quiz:admin_delete_quiz' quiz.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ quiz.title }}?');">
+                          {% csrf_token %}
+                          <button type="submit" class="tbl-action-btn btn-del" id="btn-del-quiz-{{ quiz.id }}">
+                            <i class="bi bi-trash-fill"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <div class="empty-state">
+                <i class="bi bi-journal-x"></i>
+                <p>No quizzes yet. <a href="{% url 'quiz:admin_add_quiz' %}" style="color:var(--accent);">Create your first quiz →</a></p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Quick Actions + chart -->
+        <div class="col-lg-5" style="align-self:flex-start;">
+
+          <!-- Quick Actions -->
+          <div class="section-card" style="margin-bottom:20px;">
+            <div class="section-card-header">
+              <h5><i class="bi bi-lightning-charge-fill"></i> Quick Actions</h5>
+            </div>
+            <div style="padding:18px;">
+              <div class="quicklink-grid">
+                <a href="{% url 'quiz:admin_add_quiz' %}" class="quicklink-card" id="ql-add-quiz">
+                  <i class="bi bi-file-earmark-plus-fill" style="color:#f59e0b;"></i>
+                  <span>New Quiz</span>
+                </a>
+                <a href="{% url 'quiz:admin_add_category' %}" class="quicklink-card" id="ql-add-cat">
+                  <i class="bi bi-folder-plus" style="color:#d97706;"></i>
+                  <span>Add Category</span>
+                </a>
+                <a href="{% url 'quiz:admin_users_list' %}" class="quicklink-card" id="ql-users">
+                  <i class="bi bi-people-fill" style="color:#111;"></i>
+                  <span>Manage Users</span>
+                </a>
+                <a href="{% url 'quiz:admin_reports' %}" class="quicklink-card" id="ql-reports">
+                  <i class="bi bi-bar-chart-line-fill" style="color:#f97316;"></i>
+                  <span>Reports</span>
+                </a>
+                <a href="{% url 'quiz:admin_categories_list' %}" class="quicklink-card" id="ql-cats">
+                  <i class="bi bi-tags-fill" style="color:#b45309;"></i>
+                  <span>Categories</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Online Students -->
+          <div class="section-card">
+            <div class="section-card-header">
+              <h5><i class="bi bi-broadcast" style="color: #10b981;"></i> Active Students <span class="badge-pill" style="background:#10b981; color:#fff; margin-left:6px; font-size:.7rem;">{{ stats.online_users_count }}</span></h5>
+            </div>
+            <div style="padding:0;">
+              {% if online_users %}
+              <table class="dash-table" style="margin:0;">
+                <thead style="background: transparent;">
+                  <tr>
+                    <th style="padding: 10px 18px;">Student</th>
+                    <th style="padding: 10px 18px;">Session Duration</th>
+                    <th style="padding: 10px 18px;">Last Activity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for u in online_users %}
+                  <tr>
+                    <td style="padding: 12px 18px;">
+                      <div class="user-chip">
+                        <div class="u-avatar" style="width:24px; height:24px; font-size:.65rem;">{{ u.username|first|upper }}</div>
+                        <span style="font-size:.8rem;">{{ u.username }}</span>
+                      </div>
+                    </td>
+                    <td style="font-size:.75rem; color:var(--text-muted); padding: 12px 18px;">
+                      <i class="bi bi-clock-history"></i> {% if u.current_session_start %}{{ u.current_session_start|timesince }} ago{% else %}Unknown{% endif %}
+                    </td>
+                    <td style="font-size:.75rem; padding: 12px 18px;">
+                      <span style="color:#10b981; font-weight:600;"><i class="bi bi-record-circle-fill" style="font-size:.5rem; vertical-align:middle;"></i> {% if u.last_active %}{{ u.last_active|timesince }} ago{% else %}Just now{% endif %}</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <div class="empty-state" style="padding: 30px 15px;">
+                <i class="bi bi-moon-stars"></i>
+                <p style="font-size:.8rem; margin:0;">No students are currently online.</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+
+
+        </div>
+      </div>
+
+      <!-- ── RECENT ATTEMPTS ── -->
+      <div class="section-card" style="margin-top:4px;">
+        <div class="section-card-header">
+          <h5><i class="bi bi-clock-history"></i> Recent Student Attempts</h5>
+          <a href="{% url 'quiz:admin_reports' %}" class="btn-secondary-outline" id="btn-view-all-attempts">
+            <i class="bi bi-arrow-right"></i> View Reports
+          </a>
+        </div>
+        <div class="section-card-body">
+          {% if recent_attempts %}
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Quiz</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for attempt in recent_attempts %}
+              <tr>
+                <td style="color:var(--text-muted);font-weight:600;">{{ forloop.counter }}</td>
+                <td>
+                  <div class="user-chip">
+                    <div class="u-avatar">{{ attempt.user.username|first|upper }}</div>
+                    <span>{{ attempt.user.username }}</span>
+                  </div>
+                </td>
+                <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ attempt.quiz.title }}</td>
+                <td>
+                  <div class="pct-bar">
+                    <div class="bar-track">
+                      <div class="bar-fill"
+                        style="width:{{ attempt.percentage }}%;
+                               background:{% if attempt.percentage >= 70 %}#10b981{% elif attempt.percentage >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">
+                      </div>
+                    </div>
+                    <span class="{% if attempt.percentage >= 70 %}score-good{% elif attempt.percentage >= 50 %}score-mid{% else %}score-bad{% endif %}">
+                      {{ attempt.percentage }}%
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  {% if attempt.passed %}
+                    <span class="badge-pill badge-passed"><i class="bi bi-check-circle-fill"></i> Passed</span>
+                  {% else %}
+                    <span class="badge-pill badge-failed"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--text-muted);font-size:.82rem;white-space:nowrap;">{{ attempt.completed_at|date:"M d, Y" }}</td>
+                <td>
+                  <a href="{% url 'quiz:results' attempt.id %}" class="tbl-action-btn btn-view" id="btn-view-attempt-{{ attempt.id }}">
+                    <i class="bi bi-eye-fill"></i> View
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-hourglass"></i>
+            <p>No student attempts recorded yet.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

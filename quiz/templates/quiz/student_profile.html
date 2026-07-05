@@ -1,0 +1,1143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile · FJ Brothers</title>
+  <meta name="description" content="View and update your FJ Brothers student profile.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --orange: #f97316;
+      --orange-dark: #ea580c;
+      --orange-soft: rgba(249, 115, 22, 0.10);
+      --black: #111111;
+      --body-bg: #f8f5f2;
+      --card-bg: #ffffff;
+      --border: #e8e2dc;
+      --text: #111111;
+      --muted: #78716c;
+      --sidebar-w: 268px;
+      --card-r: 16px;
+      --sh: 0 1px 4px rgba(0, 0, 0, .07), 0 2px 8px rgba(0, 0, 0, .04);
+      --sh-md: 0 4px 20px rgba(0, 0, 0, .10);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--body-bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--card-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 300;
+      border-right: 2px solid var(--border);
+      box-shadow: 2px 0 16px rgba(0, 0, 0, .04);
+      transition: transform .3s ease, width .25s ease;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 290;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sb-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 20px;
+      border-bottom: 3px solid var(--orange);
+      background: #fff;
+    }
+
+    .sb-brand .ico {
+      width: 42px;
+      height: 42px;
+      background: var(--orange);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sb-brand .txt {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.5px;
+    }
+
+    .sb-brand .txt span {
+      color: var(--orange);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--orange-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-user .av {
+      width: 38px;
+      height: 38px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .9rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sb-user .name {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .sb-user .role {
+      font-size: .7rem;
+      color: var(--muted);
+    }
+
+    .sb-label {
+      font-size: .63rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      padding: 16px 20px 6px;
+    }
+
+    .sb-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 10px;
+    }
+
+    .sb-nav a {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 12px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .18s;
+      margin-bottom: 2px;
+    }
+
+    .sb-nav a i {
+      font-size: 1.05rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sb-nav a:hover {
+      background: var(--orange-soft);
+      color: var(--orange-dark);
+    }
+
+    .sb-nav a.active {
+      background: var(--orange);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sb-nav a.active i {
+      color: #fff;
+    }
+
+    .sb-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-footer a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 600;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .18s;
+    }
+
+    .sb-footer a:hover {
+      background: rgba(239, 68, 68, .08);
+      color: #dc2626;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-width: 0;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: #fff;
+      border-bottom: 1.5px solid var(--border);
+      padding: 10px 40px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .05);
+    }
+
+    .topbar-l {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hamburger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1.4rem;
+      color: var(--black);
+      transition: .2s;
+    }
+
+    .hamburger:hover {
+      background: var(--border-soft);
+    }
+
+    .topbar-l .page-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(249, 115, 22, .30);
+      flex-shrink: 0;
+    }
+
+    .topbar-l h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black);
+      margin: 0;
+      letter-spacing: -.4px;
+    }
+
+    .topbar-l .sep {
+      color: #e2e2e2;
+      font-size: 1.4rem;
+      font-weight: 200;
+      margin: 0 4px;
+    }
+
+    .topbar-l .sub {
+      font-size: .76rem;
+      color: var(--orange-dark);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--orange-soft);
+      border: 1px solid rgba(249, 115, 22, .18);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .topbar-r {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      padding: 6px 16px 6px 7px;
+      border-radius: 50px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--black);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+      text-decoration: none;
+      transition: border-color .2s;
+    }
+
+    .topbar-chip:hover {
+      border-color: var(--orange);
+    }
+
+    .topbar-chip .av {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .84rem;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, .35);
+      flex-shrink: 0;
+    }
+
+    .topbar-icon-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+    }
+
+    .topbar-icon-btn:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 36px 38px;
+      flex: 1;
+    }
+
+    /* PAGE HEADER */
+    .page-header {
+      background: #fff;
+      border-radius: 20px;
+      padding: 0;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--orange), var(--orange-dark), #ff9d4d, var(--orange));
+      background-size: 200% 100%;
+      animation: shimmer-bar 3s linear infinite;
+      z-index: 2;
+    }
+
+    @keyframes shimmer-bar {
+      0% {
+        background-position: 0% 0%;
+      }
+
+      100% {
+        background-position: 200% 0%;
+      }
+    }
+
+    .page-header-inner {
+      padding: 30px 36px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .profile-avatar-big {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(249, 115, 22, .35);
+    }
+
+    .ph-info .name {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -.4px;
+    }
+
+    .ph-info .meta {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .ph-info .meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ph-info .meta i {
+      color: var(--orange);
+    }
+
+    /* GRID */
+    .two-col {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 22px;
+    }
+
+    /* SECTION CARD */
+    .sc {
+      background: var(--card-bg);
+      border-radius: var(--card-r);
+      border: 1px solid var(--border);
+      box-shadow: var(--sh);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .sc:last-child {
+      margin-bottom: 0;
+    }
+
+    .sc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      border-bottom: 2px solid var(--border);
+      background: #fff;
+    }
+
+    .sc-head h5 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--black);
+    }
+
+    .sc-head h5 i {
+      color: var(--orange);
+    }
+
+    .sc-body {
+      padding: 22px;
+    }
+
+    /* FORM */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--body-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .875rem;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, .1);
+      background: #fff;
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-size: .875rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .2s;
+      box-shadow: 0 4px 14px rgba(249, 115, 22, .35);
+    }
+
+    .btn-orange:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(249, 115, 22, .45);
+    }
+
+    /* STATS ROW */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-mini {
+      background: var(--body-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-mini .val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--orange);
+    }
+
+    .stat-mini .lbl {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ATTEMPTS */
+    .att-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .att-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .att-item:last-child {
+      border-bottom: 0;
+    }
+
+    .att-name {
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .att-meta {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .att-pct {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .pct-good {
+      color: #10b981;
+    }
+
+    .pct-mid {
+      color: #f97316;
+    }
+
+    .pct-bad {
+      color: #ef4444;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .7rem;
+      font-weight: 600;
+    }
+
+    .bp-pass {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .bp-fail {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    /* CERTS */
+    .cert-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cert-item:last-child {
+      border-bottom: 0;
+    }
+
+    .cert-ico {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .cert-name {
+      font-size: .875rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .cert-code {
+      font-size: .7rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    /* EMPTY */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+    }
+
+    .empty-state i {
+      font-size: 2rem;
+      opacity: .18;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: .85rem;
+    }
+
+    /* MESSAGES */
+    .msgs {
+      list-style: none;
+      margin-bottom: 16px;
+    }
+
+    .msgs li {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .msgs li.success {
+      background: rgba(16, 185, 129, .1);
+      color: #059669;
+    }
+
+    .msgs li.error,
+    .msgs li.danger {
+      background: rgba(239, 68, 68, .1);
+      color: #dc2626;
+    }
+
+    .msgs li.info,
+    .msgs li.warning {
+      background: rgba(249, 115, 22, .1);
+      color: var(--orange-dark);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:991px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 268px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .hamburger {
+        display: grid;
+      }
+
+      .sb-brand .txt,
+      .sb-label,
+      .sb-nav a span,
+      .sb-footer a span,
+      .sb-user .info {
+        display: block;
+      }
+
+      .sb-brand {
+        padding: 22px 20px;
+        justify-content: flex-start;
+      }
+
+      .sb-nav a,
+      .sb-footer a {
+        justify-content: flex-start;
+        padding: 9px 12px;
+      }
+
+      .sb-user {
+        justify-content: flex-start;
+        padding: 14px 18px;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width:600px) {
+      .content {
+        padding: 16px;
+      }
+
+      .topbar {
+        padding: 0 16px;
+        height: 64px;
+      }
+
+      .topbar-l h1 {
+        font-size: 1.1rem;
+      }
+
+      .topbar-l .sub,
+      .topbar-l .page-icon {
+        display: none;
+      }
+
+      .page-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px 20px;
+        gap: 16px;
+      }
+
+      .profile-avatar-big {
+        width: 64px;
+        height: 64px;
+        font-size: 1.6rem;
+      }
+
+      .ph-info .name {
+        font-size: 1.4rem;
+      }
+
+      .stat-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+
+  <style>
+    @keyframes rotate-border {
+      100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    .animated-brand-border {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    }
+
+    .animated-brand-border::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 500%;
+      background: conic-gradient(transparent, transparent, transparent, #ea580c);
+      transform-origin: center;
+      transform: translate(-50%, -50%);
+      animation: rotate-border 2.5s linear infinite;
+      z-index: 0;
+    }
+
+    .animated-brand-border::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      background: #fff;
+      border-radius: 10px;
+      z-index: 0;
+    }
+
+    .animated-brand-border>* {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand animated-brand-border"
+      style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon"
+        style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span
+          style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+    <div class="sb-user">
+      <div class="av">{{ request.student.username|first|upper }}</div>
+      <div class="info">
+        <div class="name">{{ request.student.username }}</div>
+        <div class="role">Student</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-label">Main</div>
+      <a href="{% url 'quiz:dashboard' %}"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+      <a href="{% url 'quiz:leaderboard' %}"><i class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
+      <a href="{% url 'quiz:profile' %}" class="active"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
+      {% if user.is_staff or user.is_superuser %}
+      <div class="sb-label">Admin</div>
+      <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Admin Panel</span></a>
+      {% endif %}
+    </nav>
+    <div class="sb-footer">
+      <a href="{% url 'quiz:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-l">
+        <div class="hamburger" id="hamburger"><i class="bi bi-list"></i></div>
+        <div class="page-icon"><i class="bi bi-person-circle"></i></div>
+        <h1>My Profile</h1>
+        <span class="sep">|</span>
+        <span class="sub">Account</span>
+      </div>
+      <div class="topbar-r">
+        <a href="{% url 'quiz:dashboard' %}" class="topbar-icon-btn" title="Dashboard"><i
+            class="bi bi-grid-1x2-fill"></i></a>
+        <a href="{% url 'quiz:leaderboard' %}" class="topbar-icon-btn" title="Leaderboard"><i
+            class="bi bi-trophy-fill"></i></a>
+        <div class="topbar-chip">
+          <div class="av">{{ request.student.username|first|upper }}</div>
+          <span>{{ request.student.get_full_name|default:request.student.username }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      {% if messages %}
+      <ul class="msgs">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">
+          {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+          {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill"></i>
+          {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+          {{ message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- Profile Header -->
+      <div class="page-header">
+        <div class="page-header-inner">
+          <div class="profile-avatar-big">{{ request.student.username|first|upper }}</div>
+          <div class="ph-info">
+            <div class="name">{{ request.student.get_full_name|default:request.student.username }}</div>
+            <div class="meta">
+              <span><i class="bi bi-person-badge"></i> @{{ request.student.username }}</span>
+              {% if profile.department %}<span><i class="bi bi-building"></i> {{ profile.department }}</span>{% endif %}
+              {% if profile.semester %}<span><i class="bi bi-calendar3"></i> {{ profile.semester }}</span>{% endif %}
+              <span><i class="bi bi-envelope"></i> {{ request.student.email|default:"No email set" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <!-- Left: Edit profile -->
+        <div>
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-pencil-fill"></i> Edit Profile</h5>
+            </div>
+            <div class="sc-body">
+              <form method="post" id="profile-form">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {% if field.field.widget.input_type == 'textarea' %}
+                  <textarea class="form-control" name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                    rows="3">{{ field.value|default:'' }}</textarea>
+                  {% else %}
+                  <input class="form-control" type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}"
+                    id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}>
+                  {% endif %}
+                  {% if field.help_text %}<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">{{
+                    field.help_text }}</div>{% endif %}
+                  {% for error in field.errors %}<div style="font-size:.72rem;color:#dc2626;margin-top:4px;">{{ error }}
+                  </div>{% endfor %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-orange" id="save-profile-btn">
+                  <i class="bi bi-check-circle-fill"></i> Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Stats + History + Certificates -->
+        <div>
+
+          <!-- Quick stats -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-bar-chart-fill"></i> My Stats</h5>
+            </div>
+            <div class="sc-body" style="padding:18px;">
+              <div class="stat-row">
+                <div class="stat-mini">
+                  <div class="val">{{ attempts.count }}</div>
+                  <div class="lbl">Tests Taken</div>
+                </div>
+                <div class="stat-mini">
+                  <div class="val">{{ certificates.count }}</div>
+                  <div class="lbl">Certificates</div>
+                </div>
+                <div class="stat-mini">
+                  <div class="val">{{ attempts.filter.passed.count|default:"0" }}</div>
+                  <div class="lbl">Passed</div>
+                </div>
+                <div class="stat-mini">
+                  <div class="val" style="font-size:1rem;">
+                    {% if attempts %}
+                    {% with attempts.first as la %}{{ la.grade|default:"—" }}{% endwith %}
+                    {% else %}—{% endif %}
+                  </div>
+                  <div class="lbl">Last Grade</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certificates -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-award-fill"></i> My Certificates</h5>
+              <span style="font-size:.75rem;color:var(--muted);">{{ certificates.count }} earned</span>
+            </div>
+            <div class="sc-body">
+              {% if certificates %}
+              <div style="padding:0 2px;">
+                {% for cert in certificates %}
+                <div class="cert-item">
+                  <div class="cert-ico">🏆</div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="cert-name">{{ cert.quiz.title|truncatechars:36 }}</div>
+                    <div class="cert-code">{{ cert.certificate_code }}</div>
+                  </div>
+                  <a href="{% url 'quiz:view_certificate' cert.id %}"
+                    style="color:var(--orange);font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+                    View <i class="bi bi-arrow-right"></i>
+                  </a>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="empty-state">
+                <i class="bi bi-award"></i>
+                <p>No certificates yet. Pass a quiz to earn one!</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Attempt history -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-clock-history"></i> Attempt History</h5>
+              <span style="font-size:.75rem;color:var(--muted);">{{ attempts.count }} total</span>
+            </div>
+            <div class="sc-body" style="padding:0 20px;">
+              {% if attempts %}
+              <div class="att-list">
+                {% for attempt in attempts|slice:":10" %}
+                <div class="att-item">
+                  <div>
+                    <div class="att-name">{{ attempt.quiz.title|truncatechars:32 }}</div>
+                    <div class="att-meta">
+                      {{ attempt.completed_at|date:"d M Y" }}
+                      &middot; {{ attempt.correct_answers }}/{{ attempt.total_questions }} correct
+                      &middot; Grade {{ attempt.grade }}
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                    <span
+                      class="att-pct {% if attempt.percentage >= 70 %}pct-good{% elif attempt.percentage >= 50 %}pct-mid{% else %}pct-bad{% endif %}">
+                      {{ attempt.percentage }}%
+                    </span>
+                    {% if attempt.passed %}
+                    <span class="badge-pill bp-pass"><i class="bi bi-check-circle-fill"></i> Passed</span>
+                    {% else %}
+                    <span class="badge-pill bp-fail"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="empty-state" style="padding:28px 0;">
+                <i class="bi bi-hourglass"></i>
+                <p>No attempts yet. Start an exam from the dashboard!</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const btn = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (btn && sidebar && overlay) {
+      btn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      });
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      });
+    }
+  </script>
+
+</body>
+
+</html>

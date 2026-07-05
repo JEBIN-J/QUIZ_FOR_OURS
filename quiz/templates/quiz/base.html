@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Engage in top-tier Quiz Competitions. Put your skills to the test in real-time, view detailed metrics, and conquer the leaderboards.">
+    <meta name="author" content="QuizCompete">
+    <title>{% block title %}Examination Portal{% endblock %} | FJ Brothers</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'quiz/css/style.css' %}?v={% now 'U' %}">
+    <!-- FontAwesome for standard icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+@keyframes rotate-border {
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animated-brand-border {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(234,88,12,0.2);
+}
+.animated-brand-border::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 500%;
+  background: conic-gradient(transparent, transparent, transparent, #ea580c);
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  animation: rotate-border 2.5s linear infinite;
+  z-index: 0;
+}
+.animated-brand-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 0;
+}
+.animated-brand-border > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+</head>
+
+<body>
+
+    <!-- Header Navigation -->
+    {% block header %}
+    <header>
+        <div class="container nav-container">
+            <a href="{% url 'quiz:welcome' %}" class="logo-link animated-brand-border" id="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;  border-radius: 12px; padding: 6px 14px; background: #fff;">
+                <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 42px; width: auto; object-fit: contain;">
+                <div style="font-size: 1.45rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: #ea580c;">Brothers</span></div>
+            </a>
+
+            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Menu">
+                <span class="burger-bar"></span>
+                <span class="burger-bar"></span>
+                <span class="burger-bar"></span>
+            </button>
+
+            <ul class="nav-menu">
+                {% if not user.is_authenticated and not request.student %}
+                <li><a href="{% url 'quiz:welcome' %}"
+                        class="nav-link {% if request.resolver_match.view_name == 'quiz:welcome' %}active{% endif %}">Home</a>
+                </li>
+                {% endif %}
+                {% if user.is_authenticated or request.student %}
+                {% if not user.is_staff and not user.is_superuser %}
+                <li><a href="{% url 'quiz:dashboard' %}"
+                        class="nav-link {% if request.resolver_match.view_name == 'quiz:dashboard' %}active{% endif %}">Dashboard</a>
+                </li>
+                <li><a href="{% url 'quiz:profile' %}"
+                        class="nav-link {% if request.resolver_match.view_name == 'quiz:profile' %}active{% endif %}">Profile</a>
+                </li>
+                {% endif %}
+                {% if user.is_staff or user.is_superuser %}
+                <li><a href="{% url 'quiz:admin_dashboard' %}"
+                        class="nav-link {% if 'admin' in request.resolver_match.view_name %}active{% endif %}">Admin
+                        Panel</a></li>
+                {% endif %}
+                <li><span style="color: var(--text-muted); font-size: 14px;"><i class="fa-solid fa-user"
+                            style="color: var(--primary-orange); margin-right: 4px;"></i> {% if request.student %}{{ request.student.username }}{% else %}{{ user.username }}{% endif %}</span>
+                </li>
+                <li><a href="{% url 'quiz:logout' %}" class="nav-btn"><i class="fa-solid fa-right-from-bracket"></i>
+                        Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'quiz:login' %}"
+                        class="nav-link {% if request.resolver_match.view_name == 'quiz:login' %}active{% endif %}">Login</a>
+                </li>
+                <li><a href="{% url 'quiz:register' %}" class="nav-btn-filled">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
+    {% endblock %}
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container" style="margin-top: 30px; margin-bottom: 40px;">
+
+        <!-- Django Notification Alerts -->
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="alert alert-{{ message.tags }}">
+                {% if message.tags == 'success' %}
+                <i class="fa-solid fa-circle-check"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-info"></i>
+                {% endif %}
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer Area -->
+    {% block footer %}
+    <footer>
+        <div class="container">
+            <p class="footer-text">&copy; 2026 <span>QuizCompete</span>. Built with Django. All Rights Reserved.</p>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-+G5ItEtFKpN8HvX07E9eQIF/vSP5iN406KZfHwj7bSaXyKj9qvZ3z++dhjOrtOaI" crossorigin="anonymous"></script>
+    <script src="{% static 'quiz/js/quiz.js' %}?v={% now 'U' %}"></script>
+</body>
+
+</html>

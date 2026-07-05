@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User History · FJ Brothers Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --sidebar-bg: #ffffff;
+      --sidebar-width: 260px;
+      --accent: #f59e0b;
+      --body-bg: #fff8f0;
+      --card-bg: #ffffff;
+      --card-radius: 18px;
+      --text-primary: #111111;
+      --text-muted: #6b7280;
+      --border: #f0e8d8;
+      --shadow-sm: 0 1px 4px rgba(245,158,11,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; font-family:'Inter',system-ui,sans-serif; }
+    body { background:var(--body-bg); color:var(--text-primary); display:flex; min-height:100vh; }
+
+    .sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); border-right:2px solid var(--border); min-height:100vh; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:100; box-shadow:4px 0 20px rgba(245,158,11,0.06); will-change:transform; transform:translateZ(0); }
+    .sidebar-brand { display:flex; align-items:center; gap:12px; padding:28px 22px 24px; border-bottom:2px solid var(--border); }
+    .sidebar-brand .brand-icon { width:40px; height:40px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:12px; display:grid; place-items:center; font-size:1.25rem; color:#fff; }
+    .sidebar-brand .brand-text { font-size:1.25rem; font-weight:800; color:#111; }
+    .sidebar-brand .brand-text span { color:var(--accent); }
+    .sidebar-section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); padding:20px 22px 8px; }
+    .sidebar-nav { padding:8px 12px; flex:1; }
+    .sidebar-nav a { display:flex; align-items:center; gap:12px; padding:10px 14px; color:#555; font-size:.875rem; font-weight:500; border-radius:10px; text-decoration:none; transition:all .2s; margin-bottom:2px; }
+    .sidebar-nav a i { font-size:1.1rem; width:20px; text-align:center; }
+    .sidebar-nav a:hover { background:var(--accent-soft); color:var(--accent-dark); }
+    .sidebar-nav a.active { background:linear-gradient(135deg,rgba(245,158,11,0.22),rgba(239,68,68,0.12)); color:var(--accent); font-weight:600; border-left:3px solid var(--accent); }
+    .sidebar-footer { padding:16px 12px; border-top:2px solid var(--border); }
+    .sidebar-footer a { display:flex; align-items:center; gap:10px; padding:10px 14px; color:#888; font-size:.875rem; border-radius:10px; text-decoration:none; transition:all .2s; }
+    .sidebar-footer a:hover { background:rgba(239,68,68,0.12); color:#ef4444; }
+
+    .main-wrapper { margin-left:var(--sidebar-width); height:100vh; overflow-y:auto; scroll-behavior:smooth; }
+    .topbar { background:var(--card-bg); border-bottom:2px solid var(--border); padding:0 28px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm); }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar-left h4 { font-size:1.1rem; font-weight:700; margin:0; }
+    .topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-badge { background:var(--black,#111); color:var(--accent); font-size:.7rem; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:.4px; }
+    .topbar-admin { display:flex; align-items:center; gap:10px; background:var(--body-bg); border:1px solid var(--border); padding:7px 14px; border-radius:50px; font-size:.85rem; font-weight:600; }
+    .topbar-admin .avatar { width:32px; height:32px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:50%; display:grid; place-items:center; font-size:.8rem; font-weight:700; color:#fff; }
+
+    .content-area { padding:28px; }
+
+    .user-header { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--card-radius); padding:22px 28px; margin-bottom:24px; display:flex; align-items:center; gap:18px; box-shadow:var(--shadow-sm); }
+    .user-av { width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:grid; place-items:center; font-size:1.5rem; font-weight:800; color:#fff; }
+    .user-meta h3 { font-size:1.2rem; font-weight:800; margin:0 0 4px; }
+    .user-meta p { font-size:.85rem; color:var(--text-muted); margin:0; }
+
+    .stat-mini-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; margin-left:auto; }
+    .stat-mini { text-align:center; background:#f9fafb; border:1px solid var(--border); border-radius:12px; padding:12px 16px; }
+    .stat-mini-num { font-size:1.4rem; font-weight:800; }
+    .stat-mini-label { font-size:.72rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+
+    .section-card { background:var(--card-bg); border-radius:var(--card-radius); border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .section-card-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px 16px; border-bottom:2px solid var(--border); }
+    .section-card-header h5 { font-size:1rem; font-weight:700; margin:0; display:flex; align-items:center; gap:8px; }
+    .section-card-header h5 i { color:var(--accent); }
+
+    .dash-table { width:100%; border-collapse:collapse; }
+    .dash-table thead tr { background:#fffbf0; }
+    .dash-table thead th { padding:12px 18px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); border-bottom:2px solid var(--border); white-space:nowrap; }
+    .dash-table tbody tr { border-bottom:2px solid var(--border); transition:background .15s; }
+    .dash-table tbody tr:last-child { border-bottom:0; }
+    .dash-table tbody tr:hover { background:#fffdf5; }
+    .dash-table td { padding:13px 18px; font-size:.875rem; vertical-align:middle; }
+
+    .badge-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 11px; border-radius:20px; font-size:.72rem; font-weight:600; }
+    .badge-passed { background:rgba(16,185,129,.1); color:#059669; }
+    .badge-failed { background:rgba(239,68,68,.1); color:#dc2626; }
+
+    .pct-bar { display:flex; align-items:center; gap:8px; }
+    .pct-bar .bar-track { flex:1; height:6px; background:var(--border); border-radius:4px; overflow:hidden; }
+    .pct-bar .bar-fill { height:100%; border-radius:4px; }
+    .score-good { color:#10b981; font-weight:700; }
+    .score-mid  { color:#f59e0b; font-weight:700; }
+    .score-bad  { color:#ef4444; font-weight:700; }
+
+    .tbl-action-btn { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:8px; font-size:.78rem; font-weight:600; text-decoration:none; transition:all .15s; }
+    .btn-view { background:rgba(139,92,246,.1); color:#7c3aed; }
+    .btn-view:hover { background:#7c3aed; color:#fff; }
+    .btn-back { background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:8px 18px; border-radius:10px; font-size:.875rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all .2s; }
+    .btn-back:hover { border-color:var(--accent); color:var(--accent); }
+
+    .empty-state { text-align:center; padding:42px 20px; color:var(--text-muted); }
+    .empty-state i { font-size:2.5rem; opacity:.3; display:block; margin-bottom:10px; }
+
+    @media (max-width:991px) {
+      .sidebar { width:64px; overflow:hidden; }
+      .sidebar .sidebar-brand .brand-text, .sidebar .sidebar-section-label, .sidebar-nav a span, .sidebar-footer a span { display:none; }
+      .sidebar-brand { padding:20px 12px; justify-content:center; }
+      .sidebar-nav a { justify-content:center; padding:12px 10px; }
+      .main-wrapper { margin-left:64px; }
+      .user-header { flex-wrap:wrap; }
+      .stat-mini-grid { margin-left:0; width:100%; }
+    }
+  </style>
+
+<style>
+@keyframes rotate-border {
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animated-brand-border {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(234,88,12,0.2);
+}
+.animated-brand-border::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 500%;
+  background: conic-gradient(transparent, transparent, transparent, #ea580c);
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+  animation: rotate-border 2.5s linear infinite;
+  z-index: 0;
+}
+.animated-brand-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 0;
+}
+.animated-brand-border > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand animated-brand-border" style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+      <a href="{% url 'quiz:admin_categories_list' %}"><i class="bi bi-tags-fill"></i> <span>Categories</span></a>
+      <a href="{% url 'quiz:admin_add_quiz' %}"><i class="bi bi-file-earmark-plus-fill"></i> <span>Create Quiz</span></a>
+      <a href="{% url 'quiz:admin_users_list' %}" class="active"><i class="bi bi-people-fill"></i> <span>Users</span></a>
+      <a href="{% url 'quiz:admin_reports' %}"><i class="bi bi-bar-chart-fill"></i> <span>Reports</span></a>
+      <a href="{% url 'quiz:leaderboard' %}"><i class="bi bi-trophy-fill"></i> <span>Leaderboard</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{% url 'quiz:logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <i class="bi bi-clock-history text-warning"></i>
+        <h4>User History</h4>
+        <span style="margin:0 4px;color:#d1d5db;">›</span>
+        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">{{ user_item.username }}</span>
+      </div>
+      <div class="topbar-right">
+        <a href="{% url 'quiz:admin_users_list' %}" class="btn-back" id="btn-back-users">
+          <i class="bi bi-arrow-left"></i> Back to Users
+        </a>
+        <span class="topbar-badge"><i class="bi bi-shield-fill-check me-1"></i>Admin</span>
+        <div class="topbar-admin">
+          <div class="avatar">{{ request.user.username|first|upper }}</div>
+          <span>{{ request.user.username }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <!-- User Header Card -->
+      <div class="user-header">
+        <div class="user-av">{{ user_item.username|first|upper }}</div>
+        <div class="user-meta">
+          <h3>{{ user_item.get_full_name|default:user_item.username }}</h3>
+          <p><i class="bi bi-envelope-fill me-1"></i>{{ user_item.email|default:"No email" }} &nbsp;·&nbsp; Joined {{ user_item.date_joined|date:"M d, Y" }}</p>
+        </div>
+        <div class="stat-mini-grid">
+          <div class="stat-mini">
+            <div class="stat-mini-num" style="color:#3b82f6;">{{ attempts.count }}</div>
+            <div class="stat-mini-label">Total Attempts</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-num" style="color:#10b981;">{{ attempts|dictsort:"passed"|last|default:"—" }}</div>
+            <div class="stat-mini-label">Passed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attempts Table -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <h5><i class="bi bi-clock-history"></i> Quiz Attempt History</h5>
+        </div>
+        <div>
+          {% if attempts %}
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Quiz</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Status</th>
+                <th>Time Taken</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for attempt in attempts %}
+              <tr>
+                <td style="color:var(--text-muted);font-weight:600;">{{ forloop.counter }}</td>
+                <td>
+                  <div style="font-weight:600;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ attempt.quiz.title }}</div>
+                  <div style="font-size:.74rem;color:var(--text-muted);">{{ attempt.quiz.category.name|default:"—" }}</div>
+                </td>
+                <td>
+                  <div class="pct-bar">
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width:{{ attempt.percentage }}%;background:{% if attempt.percentage >= 70 %}#10b981{% elif attempt.percentage >= 50 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
+                    </div>
+                    <span class="{% if attempt.percentage >= 70 %}score-good{% elif attempt.percentage >= 50 %}score-mid{% else %}score-bad{% endif %}">{{ attempt.percentage }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-size:1.1rem;font-weight:800;color:{% if attempt.grade == 'A' %}#10b981{% elif attempt.grade == 'B' %}#3b82f6{% elif attempt.grade == 'C' %}#f59e0b{% elif attempt.grade == 'D' %}#f97316{% else %}#ef4444{% endif %};">{{ attempt.grade }}</span>
+                </td>
+                <td>
+                  {% if attempt.passed %}
+                    <span class="badge-pill badge-passed"><i class="bi bi-check-circle-fill"></i> Passed</span>
+                  {% else %}
+                    <span class="badge-pill badge-failed"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--text-muted);font-size:.82rem;">
+                  {% with mins=attempt.time_taken|divisibleby:60 %}
+                  {{ attempt.time_taken|floatformat:0 }}s
+                  {% endwith %}
+                </td>
+                <td style="color:var(--text-muted);font-size:.82rem;white-space:nowrap;">{{ attempt.completed_at|date:"M d, Y H:i" }}</td>
+                <td>
+                  <a href="{% url 'quiz:results' attempt.id %}" class="tbl-action-btn btn-view" id="btn-view-hist-{{ attempt.id }}">
+                    <i class="bi bi-eye-fill"></i> View
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-hourglass"></i>
+            <p>{{ user_item.username }} has not attempted any quizzes yet.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
