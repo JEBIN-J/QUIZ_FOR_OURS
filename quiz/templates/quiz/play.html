@@ -192,6 +192,15 @@
         <div class="sidebar-column" style="flex: 1 1 250px; max-width: 300px;">
             <div style="position: sticky; top: 100px; display: flex; flex-direction: column; gap: 20px;">
                 
+                <!-- Questions Mode Box -->
+                <div class="glass-card" style="padding: 20px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px; text-align: center;">View Mode</h3>
+                    <select id="questions-mode-select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-muted); font-weight: 600; cursor: pointer;">
+                        <option value="one">One Question at a Time</option>
+                        <option value="all">Show All Questions</option>
+                    </select>
+                </div>
+
                 <!-- Summary Stats Box -->
                 <div class="glass-card" style="padding: 20px;">
                     <div class="metrics-pills-list"
@@ -239,7 +248,7 @@
                 </div>
                 
                 <!-- Question Palette Box -->
-                <div class="glass-card" style="padding: 20px;">
+                <div class="glass-card" id="question-palette-box" style="padding: 20px;">
                     <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px; text-align: center;">Question Palette</h3>
 
                 <!-- Color Legend -->
@@ -328,11 +337,12 @@
             <!-- Questions Form -->
             <form method="POST" action="{% url 'quiz:submit' quiz.id %}" id="quiz-play-form">
                 {% csrf_token %}
+                <input type="hidden" name="review_questions" id="review-questions-input" value="">
 
                 <!-- Question Display -->
                 <div class="glass-card" style="padding: 30px; margin-bottom: 20px;">
                     {% for question in questions %}
-                    <div class="question-slide" id="slide-{{ forloop.counter0 }}">
+                    <div class="question-slide" id="slide-{{ forloop.counter0 }}" data-q-id="{{ question.id }}">
                         <div class="question-index"
                             style="margin-bottom: 25px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
                             <span>Question <span class="current-idx question-counter-text">{{ forloop.counter }}</span>

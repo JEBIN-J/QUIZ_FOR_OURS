@@ -1082,8 +1082,7 @@
                           {% if entry.user == request.student %}<span
                             style="font-size:.65rem;background:var(--orange-soft);color:var(--orange-dark);padding:2px 7px;border-radius:10px;margin-left:4px;">You</span>{% endif %}
                         </div>
-                        {% if entry.quiz %}<div style="font-size:.7rem;color:var(--muted);">{{
-                          entry.quiz.title|truncatechars:28 }}</div>{% endif %}
+                        {% if entry.quiz %}<div style="font-size:.7rem;color:var(--muted);">{{ entry.quiz.title|truncatechars:28 }}</div>{% endif %}
                       </div>
                     </div>
                   </td>

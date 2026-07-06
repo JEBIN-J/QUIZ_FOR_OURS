@@ -2053,8 +2053,7 @@
             <div style="display:flex;align-items:center;gap:10px;">
               {% if improvement_delta is not None %}
               <span class="improve-badge {% if improvement_delta >= 0 %}improve-up{% else %}improve-down{% endif %}">
-                {% if improvement_delta >= 0 %}<i class="bi bi-arrow-up-short"></i> +{{ improvement_delta }}%{% else
-                %}<i class="bi bi-arrow-down-short"></i> {{ improvement_delta }}%{% endif %}
+                {% if improvement_delta >= 0 %}<i class="bi bi-arrow-up-short"></i> +{{ improvement_delta }}%{% else %}<i class="bi bi-arrow-down-short"></i> {{ improvement_delta }}%{% endif %}
               </span>
               {% endif %}
               <span class="card-sub">Last {{ chart_data|length }} attempts</span>

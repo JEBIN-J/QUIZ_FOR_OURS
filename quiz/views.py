@@ -409,9 +409,13 @@ def submit_quiz(request, quiz_id):
     correct_answers = 0
     total_score = 0
     
+    review_q_str = request.POST.get('review_questions', '')
+    review_q_ids = [int(q_id) for q_id in review_q_str.split(',') if q_id.strip().isdigit()]
+    
     # Process each question and evaluate
     for question in questions:
         response, created = UserResponse.objects.get_or_create(attempt=attempt, question=question)
+        response.is_marked_for_review = (question.id in review_q_ids)
         
         # Evaluate based on question type
         is_correct = False
@@ -569,6 +573,7 @@ def quiz_results(request, attempt_id):
                 'correct': 0,
                 'wrong': 0,
                 'skipped': 0,
+                'review': 0,
                 'points_earned': 0,
                 'total_points': 0
             }
@@ -613,6 +618,9 @@ def quiz_results(request, attempt_id):
         else:
             wrong_count += 1
             s_stat['wrong'] += 1
+            
+        if resp.is_marked_for_review:
+            s_stat['review'] += 1
             
     for stat in section_stats.values():
         stat['score_pct'] = round((stat['points_earned'] / stat['total_points'] * 100), 1) if stat['total_points'] > 0 else 0

@@ -154,6 +154,7 @@ class UserResponse(models.Model):
     selected_choice = models.ForeignKey(Choice, on_delete=models.CASCADE, null=True, blank=True)
     selected_choices = models.ManyToManyField(Choice, blank=True, related_name='multiple_responses')
     submitted_text = models.TextField(blank=True, null=True, help_text="For FillBlank, Code, and Paragraph questions")
+    is_marked_for_review = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['question__id']

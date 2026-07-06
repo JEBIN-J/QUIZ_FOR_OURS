@@ -98,9 +98,10 @@
                     </div>
 
                     <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
-                        <span style="color: var(--success-green);">{{ stat.correct }} <i class="fa-solid fa-check"></i></span>
-                        <span style="color: var(--danger-red);">{{ stat.wrong }} <i class="fa-solid fa-xmark"></i></span>
-                        <span style="color: #94a3b8;">{{ stat.skipped }} <i class="fa-solid fa-minus"></i></span>
+                        <span style="color: var(--success-green);">{{ stat.correct }} <i class="fa-solid fa-check" title="Correct"></i></span>
+                        <span style="color: var(--danger-red);">{{ stat.wrong }} <i class="fa-solid fa-xmark" title="Incorrect"></i></span>
+                        <span style="color: #6366F1;">{{ stat.review }} <i class="fa-solid fa-bookmark" title="Marked for Review"></i></span>
+                        <span style="color: #94a3b8;">{{ stat.skipped }} <i class="fa-solid fa-minus" title="Skipped"></i></span>
                     </div>
                 </div>
                 {% endfor %}
@@ -126,20 +127,25 @@
                         Q{{ forloop.counter }}: {{ response.question.text }}
                     </h4>
 
-                    {% if response.selected_choice %}
-                    {% if response.selected_choice.is_correct %}
-                    <span class="badge badge-passed" style="white-space: nowrap;"><i class="fa-solid fa-check"></i>
-                        Correct</span>
-                    {% else %}
-                    <span class="badge badge-failed" style="white-space: nowrap;"><i class="fa-solid fa-xmark"></i>
-                        Incorrect</span>
-                    {% endif %}
-                    {% else %}
-                    <span class="badge badge-failed"
-                        style="white-space: nowrap; background: rgba(255, 107, 0, 0.08); border-color: var(--primary-orange); color: var(--primary-orange);">
-                        <i class="fa-solid fa-hourglass-end"></i> Unanswered
-                    </span>
-                    {% endif %}
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                        {% if response.is_marked_for_review %}
+                        <span class="badge" style="white-space: nowrap; background: rgba(99, 102, 241, 0.1); border: 1px solid #6366F1; color: #6366F1; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+                            <i class="fa-solid fa-bookmark"></i> Review
+                        </span>
+                        {% endif %}
+
+                        {% if response.selected_choice %}
+                            {% if response.selected_choice.is_correct %}
+                            <span class="badge badge-passed" style="white-space: nowrap;"><i class="fa-solid fa-check"></i> Correct</span>
+                            {% else %}
+                            <span class="badge badge-failed" style="white-space: nowrap;"><i class="fa-solid fa-xmark"></i> Incorrect</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge badge-failed" style="white-space: nowrap; background: rgba(255, 107, 0, 0.08); border-color: var(--primary-orange); color: var(--primary-orange);">
+                                <i class="fa-solid fa-hourglass-end"></i> Unanswered
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
