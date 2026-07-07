@@ -16,6 +16,10 @@ urlpatterns = [
     path('attempt/<int:attempt_id>/results/', views.quiz_results, name='results'),
     path('profile/', views.student_profile, name='profile'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('subscriptions/', views.subscription_plans, name='subscriptions'),
+    path('checkout/<int:plan_id>/', views.checkout, name='checkout'),
+    path('payment/success/', views.payment_success, name='payment_success'),
+    path('payment/failed/', views.payment_failed, name='payment_failed'),
     path('certificate/<int:certificate_id>/', views.view_certificate, name='view_certificate'),
     
     # Demo Exam URLs
@@ -30,6 +34,13 @@ urlpatterns = [
     
     # Admin Panel Workspace
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    
+    # Admin Subscriptions Management CRUD
+    path('admin-dashboard/subscriptions/', views.admin_subscriptions_list, name='admin_subscriptions_list'),
+    path('admin-dashboard/subscription/add/', views.admin_add_subscription, name='admin_add_subscription'),
+    path('admin-dashboard/subscription/<int:plan_id>/edit/', views.admin_edit_subscription, name='admin_edit_subscription'),
+    path('admin-dashboard/subscription/<int:plan_id>/delete/', views.admin_delete_subscription, name='admin_delete_subscription'),
+
     
     # Admin Categories Management CRUD
     path('admin-dashboard/categories/', views.admin_categories_list, name='admin_categories_list'),

@@ -1,0 +1,27 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 60px; margin-bottom: 80px;">
+  
+  <div style="background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.2); padding: 50px 40px; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.08); text-align: center;">
+    
+    <div style="width: 90px; height: 90px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px; color: var(--danger-red); font-size: 3rem;">
+      <i class="bi bi-x-circle"></i>
+    </div>
+    
+    <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 12px; color: var(--danger-red);">Payment Failed</h1>
+    <p style="color: var(--text-muted); margin-bottom: 35px; font-size: 16px;">
+      We couldn't process your payment at this time. No charges were made to your account. Please try again or use a different payment method.
+    </p>
+    
+    <a href="{% url 'quiz:subscriptions' %}" class="btn btn-primary" style="padding: 12px 30px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; margin-right: 10px;">
+      <i class="bi bi-arrow-repeat"></i> Try Again
+    </a>
+    <a href="{% url 'quiz:dashboard' %}" class="btn btn-secondary" style="padding: 12px 30px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px;">
+      Cancel
+    </a>
+  </div>
+  
+</div>
+{% endblock %}

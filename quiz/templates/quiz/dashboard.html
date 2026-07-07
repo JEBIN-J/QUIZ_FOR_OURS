@@ -1883,15 +1883,12 @@
 
   <!-- ══════════ SIDEBAR ══════════ -->
   <aside class="sidebar" id="sidebar">
-    <div class="sb-brand" style="padding: 15px 20px;">
-      <div
-        style="display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-radius: 12px; background: #fff; width: 100%;">
-        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon"
-          style="height: 36px; width: auto; object-fit: contain;">
-        <div
-          style="font-size: 1.3rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px; white-space: nowrap;">
-          FJ <span style="color: var(--orange, #ea580c);">Brothers</span></div>
-      </div>
+    <div class="sb-brand animated-brand-border"
+      style="padding: 12px 20px; display: flex; align-items: center; gap: 10px;  border-radius: 12px; margin: 12px; background: #fff;">
+      <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon"
+        style="height: 38px; width: auto; object-fit: contain;">
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px; white-space: nowrap;">FJ <span
+          style="color: var(--orange, #ea580c);">Brothers</span></div>
     </div>
     <div class="sb-user">
       <div class="uav">{{ request.student.username|first|upper }}</div>
@@ -1908,7 +1905,7 @@
       <a href="{% url 'quiz:leaderboard' %}" id="nav-leaderboard"><i
           class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
       <a href="{% url 'quiz:profile' %}" id="nav-profile"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
-
+      <a href="{% url 'quiz:subscriptions' %}" id="nav-subscriptions"><i class="bi bi-star-fill"></i><span>Subscriptions</span></a>
       {% if user.is_staff or user.is_superuser %}
       <div class="sb-section-label">Admin</div>
       <a href="{% url 'quiz:admin_dashboard' %}" id="nav-admin"><i class="bi bi-speedometer2"></i><span>Admin

@@ -103,7 +103,13 @@
       .user-header { flex-wrap:wrap; }
       .stat-mini-grid { margin-left:0; width:100%; }
     }
-  </style>
+  
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d97706; }
+</style>
 
 <style>
 @keyframes rotate-border {
@@ -140,6 +146,12 @@
   position: relative;
   z-index: 1;
 }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d97706; }
 </style>
 
 </head>
@@ -268,6 +280,57 @@
           <div class="empty-state">
             <i class="bi bi-hourglass"></i>
             <p>{{ user_item.username }} has not attempted any quizzes yet.</p>
+          </div>
+          {% endif %}
+      </div>
+      
+      <!-- Subscriptions Table -->
+      <div class="section-card" style="margin-top: 24px;">
+        <div class="section-card-header">
+          <h5><i class="bi bi-star-fill"></i> Subscription History</h5>
+        </div>
+        <div>
+          {% if subscriptions %}
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Plan Name</th>
+                <th>Status</th>
+                <th>Purchased On</th>
+                <th>Valid Until</th>
+                <th>Amount Paid</th>
+                <th>Ref ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sub in subscriptions %}
+              <tr>
+                <td>
+                  <div style="font-weight:600;"><i class="bi {{ sub.plan.icon_class|default:'bi-star-fill' }} text-warning me-1"></i> {{ sub.plan.name }}</div>
+                </td>
+                <td>
+                  {% if sub.status == 'Active' %}
+                    <span class="badge-pill badge-passed"><i class="bi bi-check-circle-fill"></i> Active</span>
+                  {% elif sub.status == 'Pending' %}
+                    <span class="badge-pill" style="background:rgba(245,158,11,.1); color:#F59E0B;"><i class="bi bi-clock-fill"></i> Pending</span>
+                  {% elif sub.status == 'Expired' %}
+                    <span class="badge-pill badge-failed"><i class="bi bi-x-circle-fill"></i> Expired</span>
+                  {% else %}
+                    <span class="badge-pill badge-failed"><i class="bi bi-slash-circle-fill"></i> Cancelled</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--text-muted);font-size:.82rem;">{{ sub.start_date|date:"M d, Y" }}</td>
+                <td style="color:var(--text-muted);font-size:.82rem;">{% if sub.end_date %}{{ sub.end_date|date:"M d, Y" }}{% else %}Lifetime{% endif %}</td>
+                <td style="font-weight: 500;">₹{{ sub.amount_paid }}</td>
+                <td style="color:var(--text-muted);font-size:.82rem;">{{ sub.payment_reference }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-stars"></i>
+            <p>{{ user_item.username }} has not purchased any subscriptions yet.</p>
           </div>
           {% endif %}
         </div>

@@ -4,11 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }} · FJ Brothers Admin</title>
-  <meta name="description" content="Manage quiz categories in the FJ Brothers admin panel.">
+  <title>Subscriptions · FJ Brothers Admin</title>
+  <meta name="description" content="Manage subscription plans in the FJ Brothers admin panel.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --sidebar-bg: #ffffff;
@@ -75,13 +76,6 @@
     .btn-edit:hover  { background:#f59e0b; color:#fff; }
     .btn-del   { background:rgba(239,68,68,.1); color:#ef4444; }
     .btn-del:hover   { background:#ef4444; color:#fff; }
-
-    .search-bar { display:flex; align-items:center; gap:10px; }
-    .search-bar input { border:1px solid var(--border); border-radius:10px; padding:8px 14px; font-size:.875rem; font-family:inherit; outline:none; transition:border-color .2s; }
-    .search-bar input:focus { border-color:var(--accent); }
-
-    .badge-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 11px; border-radius:20px; font-size:.72rem; font-weight:600; }
-    .badge-count { background:rgba(245,158,11,.1); color:#d97706; }
 
     .icon-preview { width:40px; height:40px; border-radius:12px; background:rgba(245,158,11,.1); display:grid; place-items:center; font-size:1.2rem; color:var(--accent); }
 
@@ -150,7 +144,6 @@
     ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #d97706; }
 </style>
-
 </head>
 <body>
   <!-- SIDEBAR -->
@@ -173,10 +166,12 @@
       <a href="{% url 'quiz:admin_users_list' %}">
         <i class="bi bi-people-fill"></i> <span>Users</span>
       </a>
+      <a href="{% url 'quiz:admin_subscriptions_list' %}" class="active">
+        <i class="bi bi-star-fill"></i> <span>Subscriptions</span>
+      </a>
       <a href="{% url 'quiz:admin_reports' %}">
         <i class="bi bi-bar-chart-fill"></i> <span>Reports</span>
       </a>
-
     </nav>
     <div class="sidebar-footer">
       <a href="{% url 'quiz:logout' %}">
@@ -189,10 +184,10 @@
   <div class="main-wrapper">
     <header class="topbar">
       <div class="topbar-left">
-        <i class="bi bi-tags-fill text-warning"></i>
-        <h4>{{ title }}</h4>
+        <i class="bi bi-star-fill text-warning"></i>
+        <h4>Subscriptions</h4>
         <span style="margin:0 4px;color:#d1d5db;">›</span>
-        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">Manage Quiz Categories</span>
+        <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;">Manage Subscription Plans</span>
       </div>
       <div class="topbar-right">
         <span class="topbar-badge"><i class="bi bi-shield-fill-check me-1"></i>Admin</span>
@@ -203,7 +198,8 @@
       </div>
     </header>
 
-    <main class="content-area" style="overflow-y:auto;">
+    <main class="content-area">
+      <!-- Messages -->
       {% for message in messages %}
       <div class="alert-msg {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
         <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
@@ -211,51 +207,63 @@
       </div>
       {% endfor %}
 
-      <!-- Grouped Sections -->
-      {% for group in grouped_questions %}
       <div class="section-card">
         <div class="section-card-header">
-          <h5><i class="bi bi-patch-question-fill"></i> Section: {{ group.section.title }} {% if group.section.time_limit %}({{ group.section.time_limit }} mins){% endif %}</h5>
-          <div style="display:flex;gap:8px;">
-            <a href="{% url 'quiz:admin_add_question' quiz.id %}?section_id={{ group.section.id }}" class="btn-primary-cta">
-              <i class="bi bi-plus-lg"></i> Add Question to Section
+          <h5><i class="bi bi-star-fill"></i> Subscription Plans</h5>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <a href="{% url 'quiz:admin_add_subscription' %}" class="btn-primary-cta" id="btn-add-subscription">
+              <i class="bi bi-plus-lg"></i> Add Plan
             </a>
           </div>
         </div>
-        
-        <div class="section-card-body" style="padding: 0;">
-          {% if group.questions %}
-          <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+        <div>
+          {% if plans %}
           <table class="dash-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Question</th>
-                <th>Type</th>
-                <th>Pts</th>
-                <th>Diff</th>
+                <th>Order</th>
+                <th>Icon</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Duration</th>
+                <th>Popular</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {% for q in group.questions %}
+              {% for plan in plans %}
               <tr>
-                <td style="color:var(--text-muted);font-weight:600;">{{ forloop.counter }}</td>
+                <td style="color:var(--text-muted);font-weight:600;">{{ plan.order }}</td>
                 <td>
-                  <div style="font-weight:600;max-width:350px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ q.text }}">{{ q.text }}</div>
+                  <div class="icon-preview">
+                    <i class="bi {{ plan.icon_class }}"></i>
+                  </div>
                 </td>
-                <td><span class="badge-pill badge-count">{{ q.question_type }}</span></td>
-                <td><strong>{{ q.points }}</strong></td>
-                <td><span style="font-size:.8rem;font-weight:500;color:var(--text-muted);">{{ q.difficulty }}</span></td>
                 <td>
-                  <div style="display:flex;gap:5px;">
-                    <a href="{% url 'quiz:admin_edit_question' q.id %}" class="tbl-action-btn btn-edit" title="Edit">
-                      <i class="bi bi-pencil-fill"></i>
+                  <div style="font-weight:700;font-size:.9rem;">{{ plan.name }}</div>
+                </td>
+                <td style="color:var(--text-muted);font-size:.83rem; font-weight: 500;">
+                  ₹{{ plan.price }}
+                </td>
+                <td style="color:var(--text-muted);font-size:.83rem; font-weight: 500;">
+                  {% if plan.duration_days == 0 %}Lifetime{% else %}{{ plan.duration_days }} Days{% endif %}
+                </td>
+                <td>
+                  {% if plan.is_popular %}
+                  <span class="badge bg-warning text-dark px-2 rounded-pill">Yes</span>
+                  {% else %}
+                  <span class="badge bg-secondary px-2 rounded-pill">No</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <a href="{% url 'quiz:admin_edit_subscription' plan.id %}" class="tbl-action-btn btn-edit">
+                      <i class="bi bi-pencil-fill"></i> Edit
                     </a>
-                    <form method="post" action="{% url 'quiz:admin_delete_question' q.id %}" style="display:inline;" onsubmit="return confirm('Delete this question?');">
+                    <form method="post" action="{% url 'quiz:admin_delete_subscription' plan.id %}" style="display:inline;" onsubmit="return confirm('Delete plan \'{{ plan.name }}\'? This cannot be undone.');">
                       {% csrf_token %}
-                      <button type="submit" class="tbl-action-btn btn-del" title="Delete">
-                        <i class="bi bi-trash-fill"></i>
+                      <button type="submit" class="tbl-action-btn btn-del">
+                        <i class="bi bi-trash-fill"></i> Delete
                       </button>
                     </form>
                   </div>
@@ -264,79 +272,10 @@
               {% endfor %}
             </tbody>
           </table>
-          </div>
           {% else %}
           <div class="empty-state">
-            <i class="bi bi-inboxes"></i>
-            <p>No questions found in this section.</p>
-            <p style="font-size:0.85rem; margin-top:10px;"><a href="{% url 'quiz:admin_add_question' quiz.id %}?section_id={{ group.section.id }}" style="color:var(--accent);text-decoration:none;">Add the first question</a></p>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-
-      <!-- General / Unassigned Questions -->
-      <div class="section-card">
-        <div class="section-card-header">
-          <h5><i class="bi bi-patch-question-fill"></i> {% if grouped_questions %}General (Unassigned) Questions{% else %}Questions for: {{ quiz.title }}{% endif %}</h5>
-          <div style="display:flex;gap:8px;">
-            <a href="{% url 'quiz:admin_add_question' quiz.id %}" class="btn-primary-cta">
-              <i class="bi bi-plus-lg"></i> Add Question
-            </a>
-            <a href="{% url 'quiz:admin_bulk_upload_questions' quiz.id %}" class="btn-outline">
-              <i class="bi bi-cloud-arrow-up"></i> Bulk Upload
-            </a>
-          </div>
-        </div>
-        
-        <div class="section-card-body" style="padding: 0;">
-          {% if general_qs %}
-          <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
-          <table class="dash-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Question</th>
-                <th>Type</th>
-                <th>Pts</th>
-                <th>Diff</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for q in general_qs %}
-              <tr>
-                <td style="color:var(--text-muted);font-weight:600;">{{ forloop.counter }}</td>
-                <td>
-                  <div style="font-weight:600;max-width:350px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ q.text }}">{{ q.text }}</div>
-                </td>
-                <td><span class="badge-pill badge-count">{{ q.question_type }}</span></td>
-                <td><strong>{{ q.points }}</strong></td>
-                <td><span style="font-size:.8rem;font-weight:500;color:var(--text-muted);">{{ q.difficulty }}</span></td>
-                <td>
-                  <div style="display:flex;gap:5px;">
-                    <a href="{% url 'quiz:admin_edit_question' q.id %}" class="tbl-action-btn btn-edit" title="Edit">
-                      <i class="bi bi-pencil-fill"></i>
-                    </a>
-                    <form method="post" action="{% url 'quiz:admin_delete_question' q.id %}" style="display:inline;" onsubmit="return confirm('Delete this question?');">
-                      {% csrf_token %}
-                      <button type="submit" class="tbl-action-btn btn-del" title="Delete">
-                        <i class="bi bi-trash-fill"></i>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          </div>
-          {% else %}
-          <div class="empty-state">
-            <i class="bi bi-inboxes"></i>
-            <p>No {% if grouped_questions %}unassigned {% endif %}questions found.</p>
-            <p style="font-size:0.85rem; margin-top:10px;"><a href="{% url 'quiz:admin_add_question' quiz.id %}" style="color:var(--accent);text-decoration:none;">Add the first question</a> or <a href="{% url 'quiz:admin_bulk_upload_questions' quiz.id %}" style="color:var(--accent);text-decoration:none;">Bulk Upload</a></p>
+            <i class="bi bi-star"></i>
+            <p>No subscription plans found. <a href="{% url 'quiz:admin_add_subscription' %}" style="color:var(--accent);">Create your first plan →</a></p>
           </div>
           {% endif %}
         </div>

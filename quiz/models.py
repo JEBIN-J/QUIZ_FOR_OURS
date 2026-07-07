@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 class Category(models.Model):
@@ -221,9 +222,9 @@ class UserRegister(models.Model):
     
     # Merged from StudentProfile
     photo_url = models.CharField(max_length=255, blank=True, null=True, default='/static/quiz/images/default-avatar.png')
-    department = models.CharField(max_length=255, blank=True, null=True, default='Computer Science')
-    semester = models.CharField(max_length=50, blank=True, null=True, default='Semester 1')
-    achievements = models.TextField(blank=True, help_text="Pills/List of student accomplishments")
+    target_exam = models.CharField(max_length=255, blank=True, null=True, default='UPSC', help_text="e.g. UPSC, SSC, Banking")
+    education_qualification = models.CharField(max_length=50, blank=True, null=True, default='Graduate', help_text="e.g. Graduate, Post Graduate")
+    preparation_stage = models.TextField(blank=True, help_text="e.g. Beginner, 1 Year, etc.")
     registered_at = models.DateTimeField(auto_now_add=True)
     
     # Session tracking
@@ -232,3 +233,61 @@ class UserRegister(models.Model):
 
     def __str__(self):
         return self.username
+
+class SubscriptionPlan(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    icon_class = models.CharField(max_length=100, default='bi-star-fill', help_text="Bootstrap icon class")
+    is_popular = models.BooleanField(default=False, help_text="Highlight this plan as most popular")
+    
+    price = models.PositiveIntegerField(default=0, help_text="Price in INR")
+    duration_days = models.PositiveIntegerField(default=30, help_text="Duration in days (0 for lifetime)")
+    
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.name
+
+class SubscriptionFeature(models.Model):
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='features')
+    text = models.CharField(max_length=500)
+    is_included = models.BooleanField(default=True, help_text="If unchecked, shows as a disabled feature with an X")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"{self.text} ({'Included' if self.is_included else 'Excluded'})"
+
+class UserSubscription(models.Model):
+    user = models.ForeignKey('UserRegister', on_delete=models.CASCADE, related_name='subscriptions')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscribers')
+    
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(null=True, blank=True, help_text="Null means lifetime access")
+    
+    is_active = models.BooleanField(default=True)
+    payment_reference = models.CharField(max_length=100, blank=True, null=True, help_text="Mock transaction ID")
+    amount_paid = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-start_date']
+
+    @property
+    def status(self):
+        if not self.is_active:
+            return 'Cancelled'
+        now = timezone.now()
+        if self.start_date > now:
+            return 'Pending'
+        if self.end_date and self.end_date < now:
+            return 'Expired'
+        return 'Active'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.plan.name} ({self.status})"

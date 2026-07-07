@@ -413,7 +413,13 @@
       .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .topbar { padding: 0 16px; }
     }
-  </style>
+  
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d97706; }
+</style>
 
 <style>
 @keyframes rotate-border {
@@ -450,6 +456,12 @@
   position: relative;
   z-index: 1;
 }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d97706; }
 </style>
 
 </head>
@@ -475,6 +487,9 @@
       </a>
       <a href="{% url 'quiz:admin_users_list' %}">
         <i class="bi bi-people-fill"></i> <span>Users</span>
+      </a>
+      <a href="{% url 'quiz:admin_subscriptions_list' %}">
+        <i class="bi bi-star-fill"></i> <span>Subscriptions</span>
       </a>
       <a href="{% url 'quiz:admin_reports' %}">
         <i class="bi bi-bar-chart-fill"></i> <span>Reports</span>

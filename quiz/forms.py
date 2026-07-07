@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import inlineformset_factory
-from .models import Quiz, Question, Choice, Category, Subject, UserRegister, QuizSection, QuizCondition
+from .models import Quiz, Question, Choice, Category, Subject, UserRegister, QuizSection, QuizCondition, SubscriptionPlan, SubscriptionFeature
 from django.contrib.auth.hashers import make_password
 
 class RegistrationForm(forms.ModelForm):
@@ -193,12 +193,12 @@ class CategoryForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserRegister
-        fields = ['photo_url', 'department', 'semester', 'achievements']
+        fields = ['photo_url', 'target_exam', 'education_qualification', 'preparation_stage']
         widgets = {
-            'photo_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '/static/quiz/images/avatar.png'}),
-            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Information Technology'}),
-            'semester': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Semester 4'}),
-            'achievements': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'List certifications or badges...'}),
+            'photo_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter image URL...'}),
+            'target_exam': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. UPSC, SSC, Banking'}),
+            'education_qualification': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Graduate, Post Graduate'}),
+            'preparation_stage': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'e.g. Beginner, 1 Year, etc.'}),
         }
 
 class QuizConditionForm(forms.ModelForm):
@@ -214,5 +214,37 @@ QuizConditionFormSet = forms.inlineformset_factory(
     QuizCondition, 
     form=QuizConditionForm,
     extra=0,
+    can_delete=True
+)
+
+class SubscriptionPlanForm(forms.ModelForm):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ['name', 'description', 'icon_class', 'is_popular', 'price', 'duration_days', 'order']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Pro Learner'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Plan details...'}),
+            'icon_class': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., bi-rocket-fill'}),
+            'is_popular': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 499'}),
+            'duration_days': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 30'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Sort order'}),
+        }
+
+class SubscriptionFeatureForm(forms.ModelForm):
+    class Meta:
+        model = SubscriptionFeature
+        fields = ['text', 'is_included', 'order']
+        widgets = {
+            'text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Unlimited mock exams', 'style': 'flex-grow: 1;'}),
+            'is_included': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 80px;'}),
+        }
+
+SubscriptionFeatureFormSet = forms.inlineformset_factory(
+    SubscriptionPlan, 
+    SubscriptionFeature, 
+    form=SubscriptionFeatureForm,
+    extra=1,
     can_delete=True
 )

@@ -909,6 +909,7 @@
       <a href="{% url 'quiz:dashboard' %}"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
       <a href="{% url 'quiz:leaderboard' %}"><i class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
       <a href="{% url 'quiz:profile' %}" class="active"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
+      <a href="{% url 'quiz:subscriptions' %}"><i class="bi bi-star-fill"></i><span>Subscriptions</span></a>
       {% if user.is_staff or user.is_superuser %}
       <div class="sb-label">Admin</div>
       <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Admin Panel</span></a>
@@ -964,8 +965,8 @@
             <div class="name">{{ request.student.get_full_name|default:request.student.username }}</div>
             <div class="meta">
               <span><i class="bi bi-person-badge"></i> @{{ request.student.username }}</span>
-              {% if profile.department %}<span><i class="bi bi-building"></i> {{ profile.department }}</span>{% endif %}
-              {% if profile.semester %}<span><i class="bi bi-calendar3"></i> {{ profile.semester }}</span>{% endif %}
+              {% if profile.target_exam %}<span><i class="bi bi-building"></i> {{ profile.target_exam }}</span>{% endif %}
+              {% if profile.education_qualification %}<span><i class="bi bi-mortarboard"></i> {{ profile.education_qualification }}</span>{% endif %}
               <span><i class="bi bi-envelope"></i> {{ request.student.email|default:"No email set" }}</span>
             </div>
           </div>
@@ -993,8 +994,7 @@
                   <input class="form-control" type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}"
                     id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}>
                   {% endif %}
-                  {% if field.help_text %}<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">{{
-                    field.help_text }}</div>{% endif %}
+                  {% if field.help_text %}<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">{{ field.help_text }}</div>{% endif %}
                   {% for error in field.errors %}<div style="font-size:.72rem;color:#dc2626;margin-top:4px;">{{ error }}
                   </div>{% endfor %}
                 </div>
@@ -1038,6 +1038,43 @@
                   <div class="lbl">Last Grade</div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Subscriptions -->
+          <div class="sc">
+            <div class="sc-head">
+              <h5><i class="bi bi-star-fill"></i> My Subscriptions</h5>
+              <span style="font-size:.75rem;color:var(--muted);">{{ subscriptions.count }} total</span>
+            </div>
+            <div class="sc-body">
+              {% if subscriptions %}
+              <div style="padding:0 2px;">
+                {% for sub in subscriptions %}
+                <div class="cert-item" style="border: 1px solid var(--border); border-left: 4px solid {% if sub.status == 'Active' %}#10B981{% elif sub.status == 'Pending' %}#F59E0B{% else %}#ef4444{% endif %}; border-radius: 12px; padding: 16px; margin-bottom: 12px; background: #fff;">
+                  <div class="cert-ico" style="background: rgba({% if sub.status == 'Active' %}16,185,129{% elif sub.status == 'Pending' %}245,158,11{% else %}239,68,68{% endif %}, 0.1); color: {% if sub.status == 'Active' %}#10B981{% elif sub.status == 'Pending' %}#F59E0B{% else %}#ef4444{% endif %};">
+                    <i class="bi {{ sub.plan.icon_class|default:'bi-star-fill' }}"></i>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="cert-name" style="display:flex; justify-content:space-between; align-items:center;">
+                      <span>{{ sub.plan.name }}</span>
+                      <span style="font-size:.7rem; padding: 2px 8px; border-radius: 12px; font-weight:700; color: {% if sub.status == 'Active' %}#10B981{% elif sub.status == 'Pending' %}#F59E0B{% else %}#ef4444{% endif %}; background: rgba({% if sub.status == 'Active' %}16,185,129{% elif sub.status == 'Pending' %}245,158,11{% else %}239,68,68{% endif %}, 0.1);">
+                        {{ sub.status|upper }}
+                      </span>
+                    </div>
+                    <div class="cert-code">
+                      Valid: {{ sub.start_date|date:"M j, Y" }} - {% if sub.end_date %}{{ sub.end_date|date:"M j, Y" }}{% else %}Lifetime Access{% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="empty-state">
+                <i class="bi bi-stars"></i>
+                <p>No subscriptions found. <br><a href="{% url 'quiz:subscriptions' %}" style="color:var(--orange);">Explore Plans →</a></p>
+              </div>
+              {% endif %}
             </div>
           </div>
 

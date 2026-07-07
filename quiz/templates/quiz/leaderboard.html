@@ -968,6 +968,7 @@
       <a href="{% url 'quiz:leaderboard' %}" class="active"><i
           class="bi bi-trophy-fill"></i><span>Leaderboard</span></a>
       <a href="{% url 'quiz:profile' %}"><i class="bi bi-person-circle"></i><span>My Profile</span></a>
+      <a href="{% url 'quiz:subscriptions' %}"><i class="bi bi-star-fill"></i><span>Subscriptions</span></a>
       {% if user.is_staff or user.is_superuser %}
       <div class="sb-label">Admin</div>
       <a href="{% url 'quiz:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Admin Panel</span></a>

@@ -16,8 +16,8 @@ from datetime import timedelta
 from django.core.paginator import Paginator
 
 from django.contrib.auth.hashers import check_password
-from .models import Category, Subject, Quiz, Question, Choice, QuizAttempt, UserResponse, Leaderboard, Certificate, Notification, UserRegister
-from .forms import RegistrationForm, QuizForm, QuestionForm, CategoryForm, UserProfileForm
+from .models import Category, Subject, Quiz, Question, Choice, QuizAttempt, UserResponse, Leaderboard, Certificate, Notification, UserRegister, SubscriptionPlan, SubscriptionFeature, UserSubscription
+from .forms import RegistrationForm, QuizForm, QuestionForm, CategoryForm, UserProfileForm, SubscriptionPlanForm, SubscriptionFeatureFormSet
 from .decorators import student_required
 
 # Helpers
@@ -675,15 +675,79 @@ def student_profile(request):
 
     completed_attempts = QuizAttempt.objects.filter(user=request.student, status='Completed')
     certificates = Certificate.objects.filter(user=request.student).select_related('quiz')
+    subscriptions = UserSubscription.objects.filter(user=request.student).select_related('plan').order_by('-start_date')
 
     context = {
         'profile': profile,
         'form': form,
         'attempts': completed_attempts,
         'certificates': certificates,
+        'subscriptions': subscriptions,
     }
     return render(request, 'quiz/student_profile.html', context)
 
+
+@student_required
+def subscription_plans(request):
+    plans = SubscriptionPlan.objects.all().prefetch_related('features').order_by('order')
+    return render(request, 'quiz/subscriptions.html', {'plans': plans})
+
+@student_required
+def checkout(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    # In a mock payment flow, we simulate sending a transaction payload
+    # to the gateway. Here we just present the confirmation page.
+    context = {
+        'plan': plan,
+    }
+    return render(request, 'quiz/checkout.html', context)
+
+@student_required
+def payment_success(request):
+    if request.method == 'POST':
+        plan_id = request.POST.get('plan_id')
+        plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+        
+        user_reg = request.student
+        
+        # Find the latest active subscription end date to support stacking
+        latest_sub = UserSubscription.objects.filter(
+            user=user_reg, 
+            is_active=True
+        ).order_by('-end_date').first()
+        
+        now = timezone.now()
+        if latest_sub and latest_sub.end_date and latest_sub.end_date > now:
+            start_date = latest_sub.end_date
+        else:
+            start_date = now
+            
+        # Calculate expiration
+        if plan.duration_days > 0:
+            end_date = start_date + timedelta(days=plan.duration_days)
+        else:
+            end_date = None # Lifetime
+            
+        sub = UserSubscription.objects.create(
+            user=user_reg,
+            plan=plan,
+            start_date=start_date,
+            end_date=end_date,
+            is_active=True,
+            payment_reference=f"MOCK_{uuid.uuid4().hex[:8].upper()}",
+            amount_paid=plan.price
+        )
+        
+        messages.success(request, f"Successfully subscribed to {plan.name}!")
+        return render(request, 'quiz/payment_success.html', {'sub': sub})
+        
+    return redirect('quiz:subscriptions')
+
+@student_required
+def payment_failed(request):
+    messages.error(request, "Payment failed or was cancelled. Please try again.")
+    return render(request, 'quiz/payment_failed.html')
 
 @student_required
 def leaderboard(request):
@@ -799,6 +863,61 @@ def admin_dashboard(request):
     }
     return render(request, 'quiz/admin_dashboard.html', context)
 
+
+# Subscription Management CRUD
+@user_passes_test(is_admin)
+def admin_subscriptions_list(request):
+    plans = SubscriptionPlan.objects.all().order_by('order')
+    return render(request, 'quiz/admin_subscriptions_list.html', {'plans': plans})
+
+@user_passes_test(is_admin)
+def admin_add_subscription(request):
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        formset = SubscriptionFeatureFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            plan = form.save()
+            formset.instance = plan
+            formset.save()
+            messages.success(request, "Subscription plan created successfully!")
+            return redirect('quiz:admin_subscriptions_list')
+    else:
+        form = SubscriptionPlanForm()
+        formset = SubscriptionFeatureFormSet()
+    return render(request, 'quiz/admin_subscription_form.html', {
+        'form': form,
+        'formset': formset,
+        'title': 'Create Subscription Plan'
+    })
+
+@user_passes_test(is_admin)
+def admin_edit_subscription(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST, instance=plan)
+        formset = SubscriptionFeatureFormSet(request.POST, instance=plan)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Subscription plan updated successfully!")
+            return redirect('quiz:admin_subscriptions_list')
+    else:
+        form = SubscriptionPlanForm(instance=plan)
+        formset = SubscriptionFeatureFormSet(instance=plan)
+    return render(request, 'quiz/admin_subscription_form.html', {
+        'form': form,
+        'formset': formset,
+        'plan': plan,
+        'title': 'Edit Subscription Plan'
+    })
+
+@user_passes_test(is_admin)
+def admin_delete_subscription(request, plan_id):
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    if request.method == 'POST':
+        plan.delete()
+        messages.success(request, "Subscription plan deleted successfully!")
+    return redirect('quiz:admin_subscriptions_list')
 
 # Category Management CRUD
 @user_passes_test(is_admin)
@@ -1244,9 +1363,10 @@ def admin_reset_user_password(request, user_id):
 
 @user_passes_test(is_admin)
 def admin_user_history(request, user_id):
-    user_item = get_object_or_404(User, id=user_id)
+    user_item = get_object_or_404(UserRegister, id=user_id)
     attempts = QuizAttempt.objects.filter(user=user_item, status='Completed').select_related('quiz')
-    return render(request, 'quiz/admin_user_history.html', {'user_item': user_item, 'attempts': attempts})
+    subscriptions = UserSubscription.objects.filter(user=user_item).select_related('plan').order_by('-start_date')
+    return render(request, 'quiz/admin_user_history.html', {'user_item': user_item, 'attempts': attempts, 'subscriptions': subscriptions})
 
 
 # Reports Panel
