@@ -1961,6 +1961,22 @@
       </ul>
       {% endif %}
 
+      {% if expiring_subscription %}
+      <!-- EXPIRY BANNER -->
+      <div style="background: linear-gradient(135deg, #fef2f2, #fefce8); border: 1px solid #fca5a5; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.05); flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 48px; height: 48px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.5rem; flex-shrink: 0;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div>
+            <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #991b1b;">Subscription Expiring Soon</h4>
+            <p style="margin: 4px 0 0; font-size: 0.9rem; color: #b91c1c;">Your <strong>{{ expiring_subscription.plan.name }}</strong> plan will expire in <strong>{% if days_to_expiry == 0 %}less than 24 hours{% else %}{{ days_to_expiry }} day{{ days_to_expiry|pluralize }}{% endif %}</strong>. Renew now to avoid losing access.</p>
+          </div>
+        </div>
+        <a href="{% url 'quiz:subscriptions' %}" class="btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); white-space: nowrap;">Renew Plan</a>
+      </div>
+      {% endif %}
+
       <!-- ═══════════ HERO BANNER ═══════════ -->
       <section class="hero-banner" aria-label="Welcome">
         <div class="hero-inner">
@@ -2339,6 +2355,57 @@
 
     </main>
   </div><!-- .main -->
+
+  {% if expiring_subscription %}
+  <!-- EXPIRY POPUP MODAL -->
+  <div id="expiry-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; animation: fadeIn 0.4s ease forwards;">
+    <div style="background: #fff; border-radius: 24px; max-width: 480px; width: 90%; padding: 40px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+      
+      <button onclick="closeExpiryModal()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <div style="width: 80px; height: 80px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: #ef4444; font-size: 2.5rem; border: 4px solid #fef2f2;">
+        <i class="bi bi-clock-history"></i>
+      </div>
+
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.5px;">Plan Expiring Soon!</h2>
+      
+      <p style="font-size: 1rem; color: #64748b; margin-bottom: 24px; line-height: 1.6;">
+        Your <strong>{{ expiring_subscription.plan.name }}</strong> subscription will expire in 
+        <strong style="color: #ef4444;">{% if days_to_expiry == 0 %}less than 24 hours{% else %}{{ days_to_expiry }} day{{ days_to_expiry|pluralize }}{% endif %}</strong>. 
+        Don't lose access to your premium features.
+      </p>
+
+      <div style="display: flex; gap: 12px; flex-direction: column;">
+        <a href="{% url 'quiz:subscriptions' %}" class="btn-primary" style="justify-content: center; background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 1.05rem; padding: 14px; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);">
+          Renew Subscription Now
+        </a>
+        <button onclick="closeExpiryModal()" style="background: transparent; border: none; color: #94a3b8; font-weight: 600; padding: 12px; cursor: pointer; transition: color 0.2s; font-size: 0.95rem;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">
+          Remind Me Later
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!sessionStorage.getItem('expiry_reminded_{{ expiring_subscription.id }}')) {
+        document.getElementById('expiry-modal').style.display = 'flex';
+      }
+    });
+    function closeExpiryModal() {
+      document.getElementById('expiry-modal').style.display = 'none';
+      sessionStorage.setItem('expiry_reminded_{{ expiring_subscription.id }}', 'true');
+    }
+  </script>
+  {% endif %}
 
   <script>
     /* ── Clock ── */

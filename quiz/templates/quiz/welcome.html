@@ -137,7 +137,7 @@
         </p>
         
         <div class="hero-ctas" style="margin-bottom: 40px;">
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated or request.student %}
                 <a href="#available-exams" class="btn btn-primary" id="cta-dashboard"><i class="fa-solid fa-graduation-cap"></i> View Available Exams</a>
                 <a href="{% url 'quiz:dashboard' %}" class="btn btn-secondary"><i class="fa-solid fa-gauge"></i> Examinee Dashboard</a>
             {% else %}
@@ -315,7 +315,7 @@
                     
                     <div style="margin-top: 20px;">
                         {% if quiz.num_questions > 0 %}
-                            {% if user.is_authenticated %}
+                            {% if user.is_authenticated or request.student %}
                                 <a href="{% url 'quiz:demo_overview' quiz.id %}" class="btn btn-primary" style="width: 100%; font-size: 14px;" id="btn-demo-exam-{{ quiz.id }}">
                                     <i class="fa-solid fa-vial"></i> Try Sample Exam (Demo)
                                 </a>
@@ -326,7 +326,7 @@
                             {% endif %}
                             
                             <div style="margin-top: 10px; text-align: center;">
-                                {% if user.is_authenticated %}
+                                {% if user.is_authenticated or request.student %}
                                     <a href="{% url 'quiz:play' quiz.id %}" style="font-size: 12px; color: var(--primary-orange); text-decoration: none; font-weight: 600;" id="btn-full-exam-{{ quiz.id }}">
                                         Take Full Exam ({{ quiz.num_questions }} Qs) <i class="fa-solid fa-arrow-right-to-bracket" style="font-size: 10px;"></i>
                                     </a>

@@ -233,6 +233,20 @@ def dashboard(request):
         improvement_delta = latest_score - start_score
         improvement_text = f"{abs(improvement_delta)}% {'improvement' if improvement_delta >= 0 else 'drop'} since your earliest recent test"
 
+    # Calculate expiring subscription (within 5 days)
+    expiry_threshold = timezone.now() + timedelta(days=5)
+    expiring_subscription = UserSubscription.objects.filter(
+        user=user, 
+        is_active=True, 
+        end_date__isnull=False,
+        end_date__gt=timezone.now(),
+        end_date__lte=expiry_threshold
+    ).order_by('end_date').first()
+    
+    days_to_expiry = None
+    if expiring_subscription:
+        days_to_expiry = (expiring_subscription.end_date - timezone.now()).days
+
     # Pass rate
     pass_rate = round((total_passed / total_taken * 100), 1) if total_taken > 0 else 0.0
 
@@ -265,6 +279,8 @@ def dashboard(request):
         'improvement_delta': improvement_delta,
         'improvement_text': improvement_text,
         'recent_attempts': recent_attempts,
+        'expiring_subscription': expiring_subscription,
+        'days_to_expiry': days_to_expiry,
     }
     return render(request, 'quiz/dashboard.html', context)
 
