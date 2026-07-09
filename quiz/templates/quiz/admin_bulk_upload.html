@@ -199,14 +199,14 @@
                 <i class="bi bi-file-earmark-arrow-up"></i>
                 <p>Drag & drop your CSV or JSON file here, or <strong style="color:var(--accent);">click to browse</strong></p>
                 <div class="file-name" id="file-name-display">No file chosen</div>
-                <input type="file" name="file" id="file-input" accept=".csv,.json" required>
+                <input type="file" name="file" id="file-input" accept=".csv,.json,.xlsx,.xls" required>
               </div>
 
               <div class="info-box">
-                <h6><i class="bi bi-info-circle-fill" style="color:#3b82f6;"></i> Supported Formats</h6>
-                <p><strong>CSV columns:</strong> <code>text</code>, <code>type</code>, <code>correct_answer_text</code>, <code>difficulty</code>, <code>points</code>, <code>explanation</code>, <code>choice1</code>, <code>choice2</code>, <code>choice3</code>, <code>choice4</code>, <code>correct_choices</code> (comma-separated index)</p>
+                <h6><i class="bi bi-info-circle-fill" style="color:#3b82f6;"></i> Supported Formats (Auto-Fill)</h6>
+                <p><strong>Excel / CSV columns:</strong> <code>Q.No</code> (optional), <code>Question</code>, <code>Option A</code>, <code>Option B</code>, <code>Option C</code>, <code>Option D</code>, <code>Answer</code>, <code>Explanation</code>. <em>(The Answer column should match the Option Text or simply say A, B, C, D)</em></p>
                 <br>
-                <p><strong>JSON format:</strong> Array of objects with <code>text</code>, <code>type</code>, <code>options</code> (list of <code>{"text": "…", "is_correct": true/false}</code>)</p>
+                <p><strong>Advanced JSON format:</strong> Array of objects with <code>text</code>, <code>type</code>, <code>options</code> (list of <code>{"text": "…", "is_correct": true/false}</code>)</p>
               </div>
 
               <div class="btn-row">

@@ -191,6 +191,7 @@
     </header>
 
     <main class="content-area">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 30px;">
 
     <div class="form-card" style="width:100%; max-width:800px; margin:0 auto; padding:0; background:var(--card-bg);">
         <div class="form-card-header">
@@ -226,7 +227,6 @@
                 <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.description.errors.0 }}</span>
                 {% endif %}
             </div>
-
             <!-- Exam Conditions Formset -->
             <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Exam Conditions & Rules</h4>
             <div id="condition-formset-container">
@@ -541,6 +541,63 @@
     </div>
 </div>
 
+{% if quiz %}
+<!-- Added Questions Preview for Edit Quiz -->
+<div style="width:100%; max-width:800px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm);">
+    <div style="padding: 15px 20px; border-bottom: 1px solid var(--border); background: #fafafa; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--black);">Questions in {{ quiz.title }}</h3>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span style="background: rgba(245, 158, 11, 0.1); color: var(--primary-orange); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ quiz.questions.count }} Total</span>
+            <a href="{% url 'quiz:admin_add_question' quiz.id %}" class="btn-primary-cta" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 6px;">
+                <i class="fa-solid fa-plus"></i> Add More
+            </a>
+        </div>
+    </div>
+    
+    <div style="padding: 0;">
+        {% if quiz.questions.all %}
+            <div style="display: flex; flex-direction: column;">
+            {% for q in quiz.questions.all %}
+                <div style="padding: 15px 20px; border-bottom: 1px solid var(--border); background: {% cycle '#ffffff' '#fbfbfb' %};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div style="font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.4; padding-right: 15px;">
+                            <span style="color: var(--text-muted); margin-right: 5px;">{{ forloop.counter }}.</span>{{ q.text }}
+                            {% if q.section %}
+                            <span style="display: inline-block; background: rgba(59, 130, 246, 0.1); color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid rgba(59, 130, 246, 0.2);">{{ q.section.title }}</span>
+                            {% else %}
+                            <span style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid #e2e8f0;">General</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'quiz:admin_edit_question' q.id %}" class="btn-outline" style="padding: 3px 8px; font-size: 0.7rem; white-space: nowrap;"><i class="bi bi-pencil-fill"></i> Edit</a>
+                    </div>
+                    
+                    {% if q.choices.all %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; margin-left: 20px;">
+                            {% for choice in q.choices.all %}
+                                <div style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; {% if choice.is_correct %}background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #047857; font-weight: 600;{% else %}background: #f1f5f9; border: 1px solid #e2e8f0; color: var(--text-muted);{% endif %}">
+                                    {{ choice.text }} {% if choice.is_correct %}<i class="bi bi-check" style="margin-left: 2px;"></i>{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="margin-top: 8px; margin-left: 20px; font-size: 0.75rem; color: #047857; font-weight: 600; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; display: inline-block;">
+                            Answer: {{ q.correct_answer_text }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 30px 20px; color: var(--text-muted);">
+                <i class="bi bi-inbox" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
+                <p style="margin: 0; font-size: 0.9rem;">No questions added yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+        </div>
     </main>
   </div>
 

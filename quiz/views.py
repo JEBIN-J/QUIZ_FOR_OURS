@@ -2,6 +2,7 @@ import csv
 import json
 import io
 import uuid
+import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
@@ -990,6 +991,133 @@ def admin_delete_category(request, category_id):
     return redirect('quiz:admin_categories_list')
 
 
+# Helper for bulk uploads
+def process_questions_file(quiz, file_obj, filename, section_id=None):
+    try:
+        # Parse JSON
+        if filename.endswith('.json'):
+            data = json.loads(file_obj.read().decode('utf-8'))
+            for item in data:
+                q = Question.objects.create(
+                    quiz=quiz,
+                    section_id=section_id if section_id else None,
+                    text=item.get('text', ''),
+                    question_type=item.get('type', 'MCQ'),
+                    correct_answer_text=item.get('correct_answer_text', ''),
+                    difficulty=item.get('difficulty', 'Medium'),
+                    points=int(item.get('points', 1)),
+                    explanation=item.get('explanation', '')
+                )
+                options = item.get('options', [])
+                for opt in options:
+                    Choice.objects.create(question=q, text=opt.get('text'), is_correct=opt.get('is_correct', False))
+            return True, f"Successfully uploaded JSON questions to '{quiz.title}'!"
+
+        # Parse Excel / CSV using pandas for auto-fill based on specific columns
+        elif filename.endswith(('.csv', '.xlsx', '.xls')):
+            if filename.endswith('.csv'):
+                df = pd.read_csv(file_obj)
+            else:
+                df = pd.read_excel(file_obj)
+            
+            if 'Question' in df.columns:
+                count = 0
+                
+                # Pre-fetch existing sections for row-level assignment
+                section_map = {s.title.lower().strip(): s.id for s in quiz.sections.all()}
+                
+                for index, row in df.iterrows():
+                    q_text = str(row.get('Question', '')).strip()
+                    if pd.isna(row.get('Question')) or not q_text or q_text == 'nan':
+                        continue
+                        
+                    explanation_val = row.get('Explanation', '')
+                    explanation = str(explanation_val) if not pd.isna(explanation_val) else ''
+                    if explanation.lower() == 'nan':
+                        explanation = ''
+
+                    answer_val = row.get('Answer', '')
+                    answer_text = str(answer_val).strip().lower() if not pd.isna(answer_val) else ''
+                    if answer_text == 'nan':
+                        answer_text = ''
+                        
+                    # Row-level section assignment
+                    row_section_id = section_id
+                    if 'Section' in df.columns:
+                        sec_val = row.get('Section', '')
+                        if not pd.isna(sec_val) and str(sec_val).strip() and str(sec_val).lower() != 'nan':
+                            sec_title = str(sec_val).strip().lower()
+                            if sec_title in section_map:
+                                row_section_id = section_map[sec_title]
+                    
+                    q = Question.objects.create(
+                        quiz=quiz,
+                        section_id=row_section_id if row_section_id else None,
+                        text=q_text,
+                        question_type='MCQ',
+                        correct_answer_text='',
+                        difficulty='Medium',
+                        points=1,
+                        explanation=explanation
+                    )
+                    count += 1
+                    
+                    options_data = [
+                        ('Option A', 'A', row.get('Option A', '')),
+                        ('Option B', 'B', row.get('Option B', '')),
+                        ('Option C', 'C', row.get('Option C', '')),
+                        ('Option D', 'D', row.get('Option D', '')),
+                    ]
+                    
+                    for opt_name, opt_letter, opt_val in options_data:
+                        if not pd.isna(opt_val) and str(opt_val).strip() and str(opt_val).lower() != 'nan':
+                            opt_text_val = str(opt_val).strip()
+                            is_correct = False
+                            if answer_text:
+                                if answer_text == opt_letter.lower():
+                                    is_correct = True
+                                elif answer_text == opt_name.lower():
+                                    is_correct = True
+                                elif answer_text == opt_text_val.lower():
+                                    is_correct = True
+                            
+                            Choice.objects.create(
+                                question=q,
+                                text=opt_text_val,
+                                is_correct=is_correct
+                            )
+                return True, f"Successfully auto-filled and created {count} questions for '{quiz.title}' from {filename}!"
+            else:
+                if 'text' in df.columns:
+                    for index, row in df.iterrows():
+                        q = Question.objects.create(
+                            quiz=quiz,
+                            text=str(row.get('text', '')),
+                            question_type=str(row.get('type', 'MCQ')),
+                            correct_answer_text=str(row.get('correct_answer_text', '')),
+                            difficulty=str(row.get('difficulty', 'Medium')),
+                            points=int(row.get('points', 1)) if not pd.isna(row.get('points')) else 1,
+                            explanation=str(row.get('explanation', '')) if not pd.isna(row.get('explanation')) else ''
+                        )
+                        correct_choices_str = str(row.get('correct_choices', ''))
+                        correct_indexes = [int(i.strip()) for i in correct_choices_str.split(',') if i.strip() and i.strip().isdigit()]
+                        
+                        for idx, opt_col in enumerate(['choice1', 'choice2', 'choice3', 'choice4'], start=1):
+                            opt_text = row.get(opt_col)
+                            if not pd.isna(opt_text) and str(opt_text).strip():
+                                Choice.objects.create(
+                                    question=q,
+                                    text=str(opt_text).strip(),
+                                    is_correct=(idx in correct_indexes)
+                                )
+                    return True, f"Successfully uploaded legacy CSV questions to '{quiz.title}'!"
+                else:
+                    return False, "Invalid file format. Please ensure columns match the provided template (e.g. Question, Option A, Option B...)."
+        else:
+            return False, "Format unsupported! Please upload a valid Excel, CSV or JSON file."
+    except Exception as e:
+        return False, f"Error processing file: {str(e)}"
+
 # Quiz Management CRUD overrides
 @user_passes_test(is_admin)
 def admin_add_quiz(request):
@@ -1006,6 +1134,7 @@ def admin_add_quiz(request):
             section_formset.save()
             condition_formset.instance = quiz
             condition_formset.save()
+            
             messages.success(request, f"Quiz '{quiz.title}' has been created successfully! Now add questions.")
             return redirect('quiz:admin_add_question', quiz_id=quiz.id)
     else:
@@ -1023,15 +1152,11 @@ def admin_edit_quiz(request, quiz_id):
         form = QuizForm(request.POST, instance=quiz)
         section_formset = QuizSectionFormSet(request.POST, instance=quiz)
         condition_formset = QuizConditionFormSet(request.POST, instance=quiz)
-        if not condition_formset.is_valid():
-            print("CONDITION FORMSET ERRORS:", condition_formset.errors)
-            print("CONDITION FORMSET NON-FORM ERRORS:", condition_formset.non_form_errors())
         if form.is_valid() and section_formset.is_valid() and condition_formset.is_valid():
             form.save()
             section_formset.save()
-            conditions = condition_formset.save()
-            print("SAVED CONDITIONS:", conditions)
-            messages.success(request, f"Quiz '{quiz.title}' has been updated!")
+            condition_formset.save()
+            messages.success(request, "Quiz updated successfully!")
             return redirect('quiz:admin_dashboard')
     else:
         form = QuizForm(instance=quiz)
@@ -1081,6 +1206,18 @@ def admin_duplicate_quiz(request, quiz_id):
 def admin_add_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     if request.method == 'POST':
+        # Check if this is a bulk upload
+        file_obj = request.FILES.get('questions_file')
+        if file_obj:
+            section_id = request.POST.get('upload_section')
+            success, msg = process_questions_file(quiz, file_obj, file_obj.name.lower(), section_id)
+            if success:
+                messages.success(request, msg)
+            else:
+                messages.error(request, msg)
+            return redirect('quiz:admin_add_question', quiz_id=quiz.id)
+
+        # Otherwise, process the standard question form
         form = QuestionForm(request.POST, quiz=quiz)
         if form.is_valid():
             question = Question.objects.create(
@@ -1108,9 +1245,7 @@ def admin_add_question(request, quiz_id):
                     Choice.objects.create(question=question, text=form.cleaned_data['choice4_text'], is_correct=form.cleaned_data['choice4_correct'])
                     
             messages.success(request, "Question added successfully!")
-            if 'add_another' in request.POST:
-                return redirect('quiz:admin_add_question', quiz_id=quiz.id)
-            return redirect('quiz:admin_dashboard')
+            return redirect('quiz:admin_add_question', quiz_id=quiz.id)
     else:
         section_id = request.GET.get('section_id')
         initial = {}
@@ -1221,59 +1356,12 @@ def admin_bulk_upload_questions(request, quiz_id):
             messages.error(request, "Please select a file to upload.")
             return redirect('quiz:admin_bulk_upload_questions', quiz_id=quiz.id)
 
-        filename = file_obj.name
-        try:
-            # Parse JSON
-            if filename.endswith('.json'):
-                data = json.loads(file_obj.read().decode('utf-8'))
-                for item in data:
-                    q = Question.objects.create(
-                        quiz=quiz,
-                        text=item.get('text', ''),
-                        question_type=item.get('type', 'MCQ'),
-                        correct_answer_text=item.get('correct_answer_text', ''),
-                        difficulty=item.get('difficulty', 'Medium'),
-                        points=int(item.get('points', 1)),
-                        explanation=item.get('explanation', '')
-                    )
-                    # Options for json
-                    options = item.get('options', [])
-                    for opt in options:
-                        Choice.objects.create(question=q, text=opt.get('text'), is_correct=opt.get('is_correct', False))
-                messages.success(request, f"Successfully uploaded JSON questions to '{quiz.title}'!")
-
-            # Parse CSV
-            elif filename.endswith('.csv'):
-                csv_data = file_obj.read().decode('utf-8')
-                reader = csv.DictReader(io.StringIO(csv_data))
-                for row in reader:
-                    q = Question.objects.create(
-                        quiz=quiz,
-                        text=row.get('text', ''),
-                        question_type=row.get('type', 'MCQ'),
-                        correct_answer_text=row.get('correct_answer_text', ''),
-                        difficulty=row.get('difficulty', 'Medium'),
-                        points=int(row.get('points', 1)),
-                        explanation=row.get('explanation', '')
-                    )
-                    # Options list: comma separated list of option fields
-                    # We expect columns: choice1, choice2, choice3, choice4
-                    # Correct answers indexes (1-4)
-                    correct_indexes = [int(i.strip()) for i in row.get('correct_choices', '').split(',') if i.strip()]
-                    
-                    for idx, opt_col in enumerate(['choice1', 'choice2', 'choice3', 'choice4'], start=1):
-                        opt_text = row.get(opt_col)
-                        if opt_text:
-                            Choice.objects.create(
-                                question=q,
-                                text=opt_text,
-                                is_correct=(idx in correct_indexes)
-                            )
-                messages.success(request, f"Successfully uploaded CSV questions to '{quiz.title}'!")
-            else:
-                messages.error(request, "Format unsupported! Please upload a valid CSV or JSON file.")
-        except Exception as e:
-            messages.error(request, f"Error processing file: {str(e)}")
+        filename = file_obj.name.lower()
+        success, msg = process_questions_file(quiz, file_obj, filename)
+        if success:
+            messages.success(request, msg)
+        else:
+            messages.error(request, msg)
 
         return redirect('quiz:admin_dashboard')
 

@@ -198,9 +198,51 @@
             <h2>{{ title }}</h2>
           </div>
           <div class="form-card-body">
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Adding question to competition: <strong style="color: var(--primary-orange);">{{ quiz.title }}</strong></p>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">{% if title == 'Add Question' %}Adding questions to{% else %}Editing question in{% endif %} competition: <strong style="color: var(--primary-orange);">{{ quiz.title }}</strong></p>
 
-        <form method="POST" id="admin-question-form">
+        {% if title == 'Add Question' %}
+        <!-- Toggle Tabs -->
+        <div class="method-toggle" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 0;">
+            <button id="tab-manual" type="button" class="active-tab" style="background: none; border: none; font-size: 1rem; font-weight: 700; color: var(--primary-orange); border-bottom: 3px solid var(--primary-orange); padding: 10px 15px; cursor: pointer; transform: translateY(2px); transition: all 0.2s;">Add Manually</button>
+            <button id="tab-autofill" type="button" style="background: none; border: none; font-size: 1rem; font-weight: 600; color: var(--text-muted); padding: 10px 15px; cursor: pointer; border-bottom: 3px solid transparent; transform: translateY(2px); transition: all 0.2s;">Auto-fill (Excel/CSV)</button>
+        </div>
+
+        <!-- Bulk Upload Section -->
+        <div id="section-autofill" style="display: none;">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'quiz:admin_add_question' quiz.id %}">
+                {% csrf_token %}
+                <div class="bulk-upload-cta" style="background: rgba(245, 158, 11, 0.05); border: 1px dashed var(--accent); padding: 40px 20px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+                    <i class="bi bi-file-earmark-spreadsheet" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
+                    <h5 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">Auto-fill Questions from Excel/CSV</h5>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">Upload a file to instantly create all your questions and options. Columns: <code>Question, Option A, Option B, Option C, Option D, Answer, Explanation</code></p>
+                    
+                    {% if quiz.sections.all %}
+                    <div style="margin-bottom: 20px; text-align: left; max-width: 350px; margin-left: auto; margin-right: auto;">
+                        <label for="upload_section" style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Assign to Section (Optional)</label>
+                        <select name="upload_section" id="upload_section" class="form-control" style="font-size: 0.85rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; width: 100%;">
+                            <option value="">General (No Section)</option>
+                            {% for section in quiz.sections.all %}
+                            <option value="{{ section.id }}">{{ section.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="file" name="questions_file" accept=".csv,.xlsx,.xls" required style="font-size: 0.9rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: #fff;">
+                        <button type="submit" class="btn-primary-cta" style="padding: 10px 20px; font-size: 0.9rem;">
+                            <i class="bi bi-cloud-arrow-up-fill"></i> Upload & Save Instantly
+                        </button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin: 0;"><i class="bi bi-check2-circle"></i> Questions are saved to the database immediately upon upload.</p>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Manual Add Section -->
+        <div id="section-manual">
+            <form method="POST" id="admin-question-form">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -378,19 +420,67 @@
                     <i class="fa-solid fa-circle-check"></i> Save Question
                 </button>
 
-                {% if title == 'Add Question' %}
-                <button type="submit" name="add_another" class="btn-outline" id="btn-save-add-another">
-                    <i class="fa-solid fa-circle-plus"></i> Save & Add Another
-                </button>
-                {% endif %}
-
                 <a href="{% url 'quiz:admin_dashboard' %}" class="btn-outline" style="margin-left: auto;" id="btn-cancel-question">
-                    Cancel
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Done / Return to Dashboard
                 </a>
             </div>
         </form>
+        </div>
     </div>
-</div>
+    
+    <!-- Added Questions Preview -->
+    <div style="width:100%; max-width:800px; margin: 40px auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm);">
+        <div style="padding: 15px 20px; border-bottom: 1px solid var(--border); background: #fafafa; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--black);">Questions in {{ quiz.title }}</h3>
+            <span style="background: rgba(245, 158, 11, 0.1); color: var(--primary-orange); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ quiz.questions.count }} Total</span>
+        </div>
+        
+        <div style="padding: 0;">
+            {% if quiz.questions.all %}
+                <div style="display: flex; flex-direction: column;" id="preview-questions-container">
+                {% for q in quiz.questions.all %}
+                    <div class="preview-question-row" data-section-id="{{ q.section.id|default:'' }}" style="padding: 15px 20px; border-bottom: 1px solid var(--border); background: {% cycle '#ffffff' '#fbfbfb' %};">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div style="font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.4; padding-right: 15px;">
+                                <span style="color: var(--text-muted); margin-right: 5px;">{{ forloop.counter }}.</span>{{ q.text }}
+                                {% if q.section %}
+                                <span style="display: inline-block; background: rgba(59, 130, 246, 0.1); color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid rgba(59, 130, 246, 0.2);">{{ q.section.title }}</span>
+                                {% else %}
+                                <span style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid #e2e8f0;">General</span>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'quiz:admin_edit_question' q.id %}" class="btn-outline" style="padding: 3px 8px; font-size: 0.7rem; white-space: nowrap;"><i class="bi bi-pencil-fill"></i> Edit</a>
+                        </div>
+                        
+                        {% if q.choices.all %}
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; margin-left: 20px;">
+                                {% for choice in q.choices.all %}
+                                    <div style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; {% if choice.is_correct %}background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #047857; font-weight: 600;{% else %}background: #f1f5f9; border: 1px solid #e2e8f0; color: var(--text-muted);{% endif %}">
+                                        {{ choice.text }} {% if choice.is_correct %}<i class="bi bi-check" style="margin-left: 2px;"></i>{% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div style="margin-top: 8px; margin-left: 20px; font-size: 0.75rem; color: #047857; font-weight: 600; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; display: inline-block;">
+                                Answer: {{ q.correct_answer_text }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+                
+                <div id="no-filtered-questions-msg" style="display: none; text-align: center; padding: 30px 20px; color: var(--text-muted);">
+                    <i class="bi bi-inbox" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
+                    <p style="margin: 0; font-size: 0.9rem;">No questions added to this section yet.</p>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 30px 20px; color: var(--text-muted);">
+                    <i class="bi bi-inbox" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 10px; display: block;"></i>
+                    <p style="margin: 0; font-size: 0.9rem;">No questions added yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -436,6 +526,63 @@
 
         typeSelect.addEventListener("change", toggleFields);
         toggleFields(); // Initial run
+
+        // Tab Toggle Logic
+        const tabAutofill = document.getElementById('tab-autofill');
+        const tabManual = document.getElementById('tab-manual');
+        const sectionAutofill = document.getElementById('section-autofill');
+        const sectionManual = document.getElementById('section-manual');
+
+        if (tabAutofill && tabManual) {
+            tabAutofill.addEventListener('click', function() {
+                tabAutofill.style.color = 'var(--primary-orange)';
+                tabAutofill.style.borderBottomColor = 'var(--primary-orange)';
+                tabManual.style.color = 'var(--text-muted)';
+                tabManual.style.borderBottomColor = 'transparent';
+                sectionAutofill.style.display = 'block';
+                sectionManual.style.display = 'none';
+            });
+            
+            tabManual.addEventListener('click', function() {
+                tabManual.style.color = 'var(--primary-orange)';
+                tabManual.style.borderBottomColor = 'var(--primary-orange)';
+                tabAutofill.style.color = 'var(--text-muted)';
+                tabAutofill.style.borderBottomColor = 'transparent';
+                sectionManual.style.display = 'block';
+                sectionAutofill.style.display = 'none';
+            });
+        }
+
+        // Filter Preview List based on Selected Section
+        const uploadSectionDropdown = document.getElementById('upload_section');
+        const questionRows = document.querySelectorAll('.preview-question-row');
+        const noFilteredMsg = document.getElementById('no-filtered-questions-msg');
+
+        if (uploadSectionDropdown && questionRows.length > 0) {
+            uploadSectionDropdown.addEventListener('change', function() {
+                const selectedSectionId = this.value;
+                let visibleCount = 0;
+
+                questionRows.forEach(row => {
+                    if (selectedSectionId === 'all') { // if you wanted an 'all' option
+                        row.style.display = 'block';
+                        visibleCount++;
+                    } else if (row.getAttribute('data-section-id') === selectedSectionId) {
+                        row.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (noFilteredMsg) {
+                    noFilteredMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
+            });
+            
+            // Trigger filter immediately on load to match initial dropdown state
+            uploadSectionDropdown.dispatchEvent(new Event('change'));
+        }
     });
 </script>
 
