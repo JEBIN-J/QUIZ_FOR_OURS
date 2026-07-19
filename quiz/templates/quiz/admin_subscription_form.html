@@ -376,5 +376,19 @@
       });
     });
   </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll(".alert-msg, .messages li");
+            alerts.forEach(function(msg) {
+                msg.style.transition = "opacity 0.5s ease";
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 2000);
+    });
+</script>
 </body>
+
 </html>

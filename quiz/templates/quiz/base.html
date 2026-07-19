@@ -143,6 +143,20 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-+G5ItEtFKpN8HvX07E9eQIF/vSP5iN406KZfHwj7bSaXyKj9qvZ3z++dhjOrtOaI" crossorigin="anonymous"></script>
     <script src="{% static 'quiz/js/quiz.js' %}?v={% now 'U' %}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll(".alert-msg, .messages li");
+            alerts.forEach(function(msg) {
+                msg.style.transition = "opacity 0.5s ease";
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 2000);
+    });
+</script>
 </body>
+
 
 </html>

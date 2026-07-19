@@ -51,7 +51,7 @@ class QuizForm(forms.ModelForm):
     class Meta:
         model = Quiz
         fields = [
-            'title', 'description', 'category', 'subject', 'academic_year', 
+            'title', 'description', 'category', 'academic_year', 
             'unit', 'difficulty', 'duration', 'passing_score', 'negative_marking', 
             'negative_marks_per_question', 'shuffle_questions', 'shuffle_options', 
             'max_attempts', 'start_date', 'end_date', 'status'
@@ -60,14 +60,13 @@ class QuizForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter quiz title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter description...'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'subject': forms.Select(attrs={'class': 'form-control'}),
             'academic_year': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 2025-2026'}),
             'unit': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Unit 1'}),
             'difficulty': forms.Select(attrs={'class': 'form-control'}),
             'duration': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'placeholder': 'Duration in minutes'}),
             'passing_score': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100', 'placeholder': 'Passing percentage'}),
             'negative_marking': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
-            'negative_marks_per_question': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'placeholder': 'e.g. 0.25'}),
+            'negative_marks_per_question': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'e.g. 0.25'}),
             'shuffle_questions': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'shuffle_options': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'max_attempts': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
@@ -158,7 +157,12 @@ class QuestionForm(forms.Form):
         quiz = kwargs.pop('quiz', None)
         super().__init__(*args, **kwargs)
         if quiz:
-            self.fields['section'].queryset = QuizSection.objects.filter(quiz=quiz)
+            qs = QuizSection.objects.filter(quiz=quiz)
+            self.fields['section'].queryset = qs
+            if qs.exists():
+                self.fields['section'].empty_label = None
+                self.fields['section'].required = True
+                self.fields['section'].label = "Assign to Section"
 
     def clean(self):
         cleaned_data = super().clean()

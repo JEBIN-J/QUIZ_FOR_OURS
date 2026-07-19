@@ -275,20 +275,12 @@
 
             <!-- Subject & Category Grid -->
             <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Categorization & Course Mapping</h4>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+            <div style="margin-bottom: 25px;">
                 <div class="form-group">
                     <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
                     {{ form.category }}
                     {% if form.category.errors %}
                     <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.category.errors.0 }}</span>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
-                    {{ form.subject }}
-                    {% if form.subject.errors %}
-                    <span style="color: var(--danger-red); font-size: 12px; display: block; margin-top: 5px;">{{ form.subject.errors.0 }}</span>
                     {% endif %}
                 </div>
             </div>
@@ -409,7 +401,24 @@
             <!-- Quiz Sections / Parts Formset -->
             <h4 style="font-size: 14px; font-weight: 700; color: var(--primary-orange); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Quiz Sections (Optional Parts)</h4>
             <div style="margin-bottom: 30px;">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Add optional sections to divide this quiz into timed parts (e.g., Options, Aptitude).</p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Add optional sections to divide this quiz into timed parts (e.g., Options, Aptitude). Section time limits <strong>cannot exceed</strong> the total quiz duration.</p>
+
+                <!-- ── Time Budget Tracker ─────────────────────────── -->
+                <div id="time-budget-box" style="background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">⏱ Section Time Budget</span>
+                        <div style="display: flex; gap: 18px; font-size: 12px; font-weight: 600;">
+                            <span>Total: <span id="budget-total" style="color: var(--primary-orange);">— min</span></span>
+                            <span>Used: <span id="budget-used" style="color: #6b7280;">0 min</span></span>
+                            <span>Remaining: <span id="budget-remaining" style="color: #059669;">— min</span></span>
+                        </div>
+                    </div>
+                    <div style="height: 8px; background: #f0e8d8; border-radius: 99px; overflow: hidden;">
+                        <div id="budget-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg,#f59e0b,#10b981); border-radius: 99px; transition: width 0.3s, background 0.3s;"></div>
+                    </div>
+                    <p id="budget-warning" style="display:none; margin: 8px 0 0; font-size: 12px; font-weight: 600; color: #dc2626;"></p>
+                </div>
+                <!-- ───────────────────────────────────────────────── -->
                 
                 {{ section_formset.management_form }}
                 <div id="section-formset-container" style="display: flex; flex-direction: column; gap: 20px;">
@@ -418,13 +427,17 @@
                             {{ sform.id }}
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                                 <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--primary-orange);"><i class="bi bi-layout-text-sidebar-reverse"></i> Section Setup</h5>
-                                {% if section_formset.can_delete %}
-                                <div style="{% if not sform.instance.pk %}display: none;{% endif %}">
-                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer;">
-                                        {{ sform.DELETE }} Remove Section
-                                    </label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    {% if section_formset.can_delete %}
+                                    <!-- Hidden Django DELETE checkbox (used for saved records) -->
+                                    <div style="display:none;">{{ sform.DELETE }}</div>
+                                    <!-- Visible remove button -->
+                                    <button type="button" class="section-remove-btn"
+                                        style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #dc2626; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s;">
+                                        <i class="bi bi-x-lg"></i> Remove Section
+                                    </button>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
                             </div>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -459,13 +472,11 @@
                         {{ section_formset.empty_form.id }}
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                             <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--primary-orange);"><i class="bi bi-layout-text-sidebar-reverse"></i> Section Setup</h5>
-                            {% if section_formset.can_delete %}
-                            <div style="display: none;">
-                                <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--danger-red); cursor: pointer;">
-                                    {{ section_formset.empty_form.DELETE }} Remove Section
-                                </label>
-                            </div>
-                            {% endif %}
+                            <!-- New rows are removed from DOM directly (no saved PK yet) -->
+                            <button type="button" class="section-remove-btn new-row-remove"
+                                style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #dc2626; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s;">
+                                <i class="bi bi-x-lg"></i> Remove Section
+                            </button>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -491,24 +502,210 @@
                 
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        // Section Formset Logic
-                        const addSecBtn = document.getElementById('add-section-btn');
-                        const secContainer = document.getElementById('section-formset-container');
+
+                        // ── Helpers ────────────────────────────────────────────
+                        const durationInput   = document.getElementById('{{ form.duration.id_for_label }}');
+                        const secContainer    = document.getElementById('section-formset-container');
+                        const budgetBar       = document.getElementById('budget-bar');
+                        const budgetTotal     = document.getElementById('budget-total');
+                        const budgetUsed      = document.getElementById('budget-used');
+                        const budgetRemaining = document.getElementById('budget-remaining');
+                        const budgetWarning   = document.getElementById('budget-warning');
+                        const saveBtn         = document.getElementById('btn-save-quiz');
+
+                        /** Return all visible (non-deleted) time_limit inputs inside the section container */
+                        function getActiveSectionTimeLimits() {
+                            return Array.from(secContainer.querySelectorAll('input[name$="-time_limit"]')).filter(inp => {
+                                // Skip inputs that belong to rows marked for deletion
+                                const row = inp.closest('.section-form-row');
+                                if (!row) return true;
+                                const delChk = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                                return !delChk || !delChk.checked;
+                            });
+                        }
+
+                        /** Re-calculate budget and update UI */
+                        function recalcBudget() {
+                            const total = parseInt(durationInput ? durationInput.value : 0, 10) || 0;
+                            let used = 0;
+                            getActiveSectionTimeLimits().forEach(inp => {
+                                used += parseInt(inp.value, 10) || 0;
+                            });
+                            const remaining = total - used;
+                            const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+
+                            // Update labels
+                            budgetTotal.textContent     = total > 0 ? total + ' min' : '— min';
+                            budgetUsed.textContent      = used + ' min';
+                            budgetRemaining.textContent = total > 0 ? remaining + ' min' : '— min';
+
+                            // Colour-code remaining
+                            if (total === 0) {
+                                budgetRemaining.style.color = '#6b7280';
+                            } else if (remaining < 0) {
+                                budgetRemaining.style.color = '#dc2626';
+                            } else if (remaining === 0) {
+                                budgetRemaining.style.color = '#059669';
+                            } else {
+                                budgetRemaining.style.color = '#059669';
+                            }
+
+                            // Progress bar
+                            budgetBar.style.width = pct + '%';
+                            if (used > total && total > 0) {
+                                budgetBar.style.background = '#ef4444';
+                            } else if (pct >= 90) {
+                                budgetBar.style.background = 'linear-gradient(90deg,#f59e0b,#ef4444)';
+                            } else {
+                                budgetBar.style.background = 'linear-gradient(90deg,#f59e0b,#10b981)';
+                            }
+
+                            // Warning message
+                            if (total > 0 && used > total) {
+                                budgetWarning.style.display = 'block';
+                                budgetWarning.textContent   = '⚠ Total section time (' + used + ' min) exceeds quiz duration (' + total + ' min). Please reduce section time limits.';
+                                if (saveBtn) { saveBtn.disabled = true; saveBtn.title = 'Section times exceed quiz duration'; saveBtn.style.opacity = '0.5'; }
+                            } else {
+                                budgetWarning.style.display = 'none';
+                                if (saveBtn) { saveBtn.disabled = false; saveBtn.title = ''; saveBtn.style.opacity = '1'; }
+                            }
+
+                            // Highlight over-budget time_limit inputs
+                            getActiveSectionTimeLimits().forEach(inp => {
+                                inp.style.borderColor = '';
+                                inp.style.boxShadow   = '';
+                            });
+                            if (total > 0 && used > total) {
+                                // Find which inputs are contributing to the overflow
+                                let runningTotal = 0;
+                                getActiveSectionTimeLimits().forEach(inp => {
+                                    const val = parseInt(inp.value, 10) || 0;
+                                    runningTotal += val;
+                                    if (runningTotal > total) {
+                                        inp.style.borderColor = '#ef4444';
+                                        inp.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.15)';
+                                    }
+                                });
+                            }
+                        }
+
+                        /** Attach live validation to a time_limit input */
+                        function bindTimeLimitInput(inp) {
+                            inp.addEventListener('input', function() {
+                                const total = parseInt(durationInput ? durationInput.value : 0, 10) || 0;
+                                if (total > 0) {
+                                    // Compute sum of all OTHER active time limits
+                                    let otherSum = 0;
+                                    getActiveSectionTimeLimits().forEach(other => {
+                                        if (other !== inp) otherSum += parseInt(other.value, 10) || 0;
+                                    });
+                                    const maxAllowed = total - otherSum;
+                                    if ((parseInt(inp.value, 10) || 0) > maxAllowed) {
+                                        inp.value = maxAllowed > 0 ? maxAllowed : 0;
+                                    }
+                                }
+                                recalcBudget();
+                            });
+                        }
+
+                        // Bind to existing section time_limit inputs
+                        secContainer.querySelectorAll('input[name$="-time_limit"]').forEach(bindTimeLimitInput);
+
+                        // Re-calc when duration changes
+                        if (durationInput) durationInput.addEventListener('input', recalcBudget);
+
+                        // Listen for DELETE checkbox toggles (saved rows marked for deletion)
+                        secContainer.addEventListener('change', function(e) {
+                            if (e.target && e.target.name && e.target.name.endsWith('-DELETE')) recalcBudget();
+                        });
+
+                        // ── Block negative values on ALL numeric inputs ──────────
+                        document.querySelectorAll('input[type="number"]').forEach(function(numInp) {
+                            // Set browser minimum to 0
+                            if (!numInp.hasAttribute('min')) numInp.setAttribute('min', '0');
+                            numInp.addEventListener('input', function() {
+                                const v = parseFloat(this.value);
+                                if (!isNaN(v) && v < 0) this.value = 0;
+                            });
+                            numInp.addEventListener('keydown', function(e) {
+                                // Block the minus key
+                                if (e.key === '-') e.preventDefault();
+                            });
+                        });
+
+                        // ── Saved section rows: wire Remove button ────────────
+                        // (ticks hidden DELETE checkbox and hides the row completely)
+                        function bindSavedRemoveBtn(btn) {
+                            btn.addEventListener('click', function() {
+                                const row = btn.closest('.section-form-row');
+                                if (!row) return;
+                                const delChk = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                                if (delChk) {
+                                    delChk.checked = true;
+                                    row.style.display = 'none'; // completely hide it
+                                }
+                                recalcBudget();
+                            });
+                        }
+                        secContainer.querySelectorAll('.section-remove-btn:not(.new-row-remove)').forEach(bindSavedRemoveBtn);
+
+                        // Initial render
+                        recalcBudget();
+
+                        // ── Section Formset Logic ──────────────────────────────
+                        const addSecBtn         = document.getElementById('add-section-btn');
                         const secTotalFormsInput = document.querySelector('input[name="sections-TOTAL_FORMS"]');
                         const secEmptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
-                        
+
                         if (addSecBtn && secContainer && secTotalFormsInput) {
                             addSecBtn.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 const currentFormCount = parseInt(secTotalFormsInput.value, 10);
                                 const newFormHtml = secEmptyFormTemplate.replace(/__prefix__/g, currentFormCount);
-                                
                                 secContainer.insertAdjacentHTML('beforeend', newFormHtml);
                                 secTotalFormsInput.value = currentFormCount + 1;
+                                // Bind validation to newly added time_limit input
+                                const newRow = secContainer.lastElementChild;
+                                if (newRow) {
+                                    const newInp = newRow.querySelector('input[name$="-time_limit"]');
+                                    if (newInp) bindTimeLimitInput(newInp);
+                                    // Wire the new-row remove button (removes DOM node and re-indexes)
+                                    const newRemoveBtn = newRow.querySelector('.new-row-remove');
+                                    if (newRemoveBtn) {
+                                        newRemoveBtn.addEventListener('click', function() {
+                                            newRow.remove();
+                                            // Re-index all rows to keep Django happy
+                                            const allRows = secContainer.querySelectorAll('.section-form-row');
+                                            secTotalFormsInput.value = allRows.length;
+                                            allRows.forEach((row, index) => {
+                                                row.querySelectorAll('input, select, textarea').forEach(inp => {
+                                                    if (inp.name) inp.name = inp.name.replace(/sections-\d+-/g, `sections-${index}-`);
+                                                    if (inp.id) inp.id = inp.id.replace(/sections-\d+-/g, `sections-${index}-`);
+                                                });
+                                                row.querySelectorAll('label').forEach(lbl => {
+                                                    if (lbl.htmlFor) lbl.htmlFor = lbl.htmlFor.replace(/sections-\d+-/g, `sections-${index}-`);
+                                                });
+                                            });
+                                            recalcBudget();
+                                        });
+                                    }
+                                    // Ensure min=0 on new numeric inputs
+                                    newRow.querySelectorAll('input[type="number"]').forEach(function(numInp) {
+                                        if (!numInp.hasAttribute('min')) numInp.setAttribute('min', '0');
+                                        numInp.addEventListener('input', function() {
+                                            const v = parseFloat(this.value);
+                                            if (!isNaN(v) && v < 0) this.value = 0;
+                                        });
+                                        numInp.addEventListener('keydown', function(ev) {
+                                            if (ev.key === '-') ev.preventDefault();
+                                        });
+                                    });
+                                }
+                                recalcBudget();
                             });
                         }
 
-                        // Condition Formset Logic
+                        // ── Condition Formset Logic ────────────────────────────
                         const addCondBtn = document.getElementById('add-condition-btn');
                         const condContainer = document.getElementById('condition-formset-container');
                         const condTotalFormsInput = document.querySelector('input[name="conditions-TOTAL_FORMS"]');
@@ -519,11 +716,24 @@
                                 e.preventDefault();
                                 const currentFormCount = parseInt(condTotalFormsInput.value, 10);
                                 const newFormHtml = condEmptyFormTemplate.replace(/__prefix__/g, currentFormCount);
-                                
                                 condContainer.insertAdjacentHTML('beforeend', newFormHtml);
                                 condTotalFormsInput.value = currentFormCount + 1;
                             });
                         }
+
+                        // ── Form submit guard ──────────────────────────────────
+                        document.getElementById('admin-quiz-form').addEventListener('submit', function(e) {
+                            const total = parseInt(durationInput ? durationInput.value : 0, 10) || 0;
+                            let used = 0;
+                            getActiveSectionTimeLimits().forEach(inp => { used += parseInt(inp.value, 10) || 0; });
+                            if (total > 0 && used > total) {
+                                e.preventDefault();
+                                budgetWarning.style.display = 'block';
+                                budgetWarning.textContent   = '⚠ Cannot save: section time (' + used + ' min) exceeds quiz duration (' + total + ' min).';
+                                budgetWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+
                     });
                 </script>
             </div>

@@ -192,6 +192,14 @@
 
     <main class="content-area">
 
+      <!-- Messages Display -->
+      {% for message in messages %}
+      <div class="alert-msg {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}" style="max-width: 800px; margin: 0 auto 20px auto; background: {% if message.tags == 'success' %}rgba(16,185,129,.08){% else %}rgba(239,68,68,.08){% endif %}; color: {% if message.tags == 'success' %}#059669{% else %}#dc2626{% endif %}; border: 1px solid {% if message.tags == 'success' %}rgba(16,185,129,.2){% else %}rgba(239,68,68,.2){% endif %}; padding: 12px 18px; border-radius: 10px; display: flex; align-items: center; gap: 8px;">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+
     <div class="form-card" style="width:100%; max-width:800px; margin:0 auto; padding:0; background:var(--card-bg);">
         <div class="form-card-header">
             <i class="fa-solid fa-circle-question"></i>
@@ -218,9 +226,8 @@
                     
                     {% if quiz.sections.all %}
                     <div style="margin-bottom: 20px; text-align: left; max-width: 350px; margin-left: auto; margin-right: auto;">
-                        <label for="upload_section" style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Assign to Section (Optional)</label>
-                        <select name="upload_section" id="upload_section" class="form-control" style="font-size: 0.85rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; width: 100%;">
-                            <option value="">General (No Section)</option>
+                        <label for="upload_section" style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Assign to Section</label>
+                        <select name="upload_section" id="upload_section" class="form-control" style="font-size: 0.85rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; width: 100%;" required>
                             {% for section in quiz.sections.all %}
                             <option value="{{ section.id }}">{{ section.title }}</option>
                             {% endfor %}
@@ -231,10 +238,10 @@
                     <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
                         <input type="file" name="questions_file" accept=".csv,.xlsx,.xls" required style="font-size: 0.9rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: #fff;">
                         <button type="submit" class="btn-primary-cta" style="padding: 10px 20px; font-size: 0.9rem;">
-                            <i class="bi bi-cloud-arrow-up-fill"></i> Upload & Save Instantly
+                            <i class="bi bi-cloud-arrow-up-fill"></i> Upload & Save Questions
                         </button>
                     </div>
-                    <p style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin: 0;"><i class="bi bi-check2-circle"></i> Questions are saved to the database immediately upon upload.</p>
+                    <p style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin: 0;"><i class="bi bi-check2-circle"></i> Click the button above to upload and save your questions.</p>
                 </div>
             </form>
         </div>
@@ -420,8 +427,8 @@
                     <i class="fa-solid fa-circle-check"></i> Save Question
                 </button>
 
-                <a href="{% url 'quiz:admin_dashboard' %}" class="btn-outline" style="margin-left: auto;" id="btn-cancel-question">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Done / Return to Dashboard
+                <a href="{% url 'quiz:admin_add_question' quiz.id %}" class="btn-outline" style="margin-left: auto;" id="btn-cancel-question">
+                    <i class="fa-solid fa-arrow-left"></i> Done / Go Back
                 </a>
             </div>
         </form>
@@ -449,7 +456,13 @@
                                 <span style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid #e2e8f0;">General</span>
                                 {% endif %}
                             </div>
-                            <a href="{% url 'quiz:admin_edit_question' q.id %}" class="btn-outline" style="padding: 3px 8px; font-size: 0.7rem; white-space: nowrap;"><i class="bi bi-pencil-fill"></i> Edit</a>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <a href="{% url 'quiz:admin_edit_question' q.id %}" class="btn-outline" style="padding: 3px 8px; font-size: 0.7rem; white-space: nowrap;"><i class="bi bi-pencil-fill"></i> Edit</a>
+                                <form method="POST" action="{% url 'quiz:admin_delete_question' q.id %}" onsubmit="return confirm('Are you sure you want to permanently delete this question?');" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-outline" style="padding: 3px 8px; font-size: 0.7rem; white-space: nowrap; color: #dc2626; border-color: #fca5a5; background: rgba(220, 38, 38, 0.05);"><i class="bi bi-trash-fill"></i> Remove</button>
+                                </form>
+                            </div>
                         </div>
                         
                         {% if q.choices.all %}
@@ -481,6 +494,42 @@
             {% endif %}
         </div>
     </div>
+
+    {% if title == 'Add Question' %}
+    <div style="width:100%; max-width:800px; margin: 0 auto 40px auto; text-align: right;">
+        <button id="btn-finish-quiz" class="btn-primary-cta" style="font-size: 1.1rem; padding: 15px 30px; box-shadow: 0 6px 16px rgba(245,158,11,0.35);">
+            <i class="bi bi-check-circle-fill"></i> Finish & Publish Quiz
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const btnFinish = document.getElementById('btn-finish-quiz');
+            if (btnFinish) {
+                btnFinish.addEventListener('click', function() {
+                    let missingSections = [];
+                    {% if quiz.sections.all %}
+                        {% for section in quiz.sections.all %}
+                            if ({{ section.questions.count|default:"0" }} === 0) {
+                                missingSections.push("{{ section.title|escapejs }}");
+                            }
+                        {% endfor %}
+                    {% else %}
+                        if ({{ quiz.questions.count|default:"0" }} === 0) {
+                            missingSections.push("General (No sections defined)");
+                        }
+                    {% endif %}
+
+                    if (missingSections.length > 0) {
+                        alert("You cannot finish yet!\n\nYou must upload or add at least one question to the following sections:\n- " + missingSections.join("\n- "));
+                    } else {
+                        window.location.href = "{% url 'quiz:admin_dashboard' %}";
+                    }
+                });
+            }
+        });
+    </script>
+    {% endif %}
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -550,7 +599,19 @@
                 tabAutofill.style.borderBottomColor = 'transparent';
                 sectionManual.style.display = 'block';
                 sectionAutofill.style.display = 'none';
+                
+                // Update URL parameter without reloading
+                if (history.pushState) {
+                    const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.pushState({path:newurl}, '', newurl);
+                }
             });
+
+            // Check URL for ?tab=autofill on load
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'autofill') {
+                tabAutofill.click();
+            }
         }
 
         // Filter Preview List based on Selected Section
@@ -590,5 +651,18 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll(".alert-msg, .messages li");
+            alerts.forEach(function(msg) {
+                msg.style.transition = "opacity 0.5s ease";
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 2000);
+    });
+</script>
 </body>
 </html>

@@ -1126,6 +1126,18 @@ def admin_add_quiz(request):
         form = QuizForm(request.POST)
         section_formset = QuizSectionFormSet(request.POST)
         condition_formset = QuizConditionFormSet(request.POST)
+        if not (form.is_valid() and section_formset.is_valid() and condition_formset.is_valid()):
+            print("FORM ERRORS:", form.errors)
+            print("SECTION ERRORS:", section_formset.errors)
+            print("CONDITION ERRORS:", condition_formset.errors)
+            print("SECTION NON FORM ERRORS:", section_formset.non_form_errors())
+            if form.errors:
+                messages.error(request, f"Form Errors: {form.errors}")
+            if section_formset.errors and any(section_formset.errors):
+                messages.error(request, f"Section Errors: {section_formset.errors}")
+            if section_formset.non_form_errors():
+                messages.error(request, f"Section Formset Errors: {section_formset.non_form_errors()}")
+            
         if form.is_valid() and section_formset.is_valid() and condition_formset.is_valid():
             quiz = form.save(commit=False)
             quiz.created_by = request.user
@@ -1152,6 +1164,18 @@ def admin_edit_quiz(request, quiz_id):
         form = QuizForm(request.POST, instance=quiz)
         section_formset = QuizSectionFormSet(request.POST, instance=quiz)
         condition_formset = QuizConditionFormSet(request.POST, instance=quiz)
+        if not (form.is_valid() and section_formset.is_valid() and condition_formset.is_valid()):
+            print("FORM ERRORS:", form.errors)
+            print("SECTION ERRORS:", section_formset.errors)
+            print("CONDITION ERRORS:", condition_formset.errors)
+            print("SECTION NON FORM ERRORS:", section_formset.non_form_errors())
+            if form.errors:
+                messages.error(request, f"Form Errors: {form.errors}")
+            if section_formset.errors and any(section_formset.errors):
+                messages.error(request, f"Section Errors: {section_formset.errors}")
+            if section_formset.non_form_errors():
+                messages.error(request, f"Section Formset Errors: {section_formset.non_form_errors()}")
+            
         if form.is_valid() and section_formset.is_valid() and condition_formset.is_valid():
             form.save()
             section_formset.save()
@@ -1215,7 +1239,9 @@ def admin_add_question(request, quiz_id):
                 messages.success(request, msg)
             else:
                 messages.error(request, msg)
-            return redirect('quiz:admin_add_question', quiz_id=quiz.id)
+            from django.urls import reverse
+            url = reverse('quiz:admin_add_question', args=[quiz.id])
+            return redirect(f"{url}?tab=autofill")
 
         # Otherwise, process the standard question form
         form = QuestionForm(request.POST, quiz=quiz)
@@ -1287,7 +1313,7 @@ def admin_edit_question(request, question_id):
                     Choice.objects.create(question=question, text=form.cleaned_data['choice4_text'], is_correct=form.cleaned_data['choice4_correct'])
                     
             messages.success(request, "Question updated successfully!")
-            return redirect('quiz:admin_dashboard')
+            return redirect('quiz:admin_add_question', quiz_id=question.quiz.id)
     else:
         # Prepopulate initial data
         initial = {
@@ -1317,10 +1343,11 @@ def admin_edit_question(request, question_id):
 @user_passes_test(is_admin)
 def admin_delete_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
+    quiz_id = question.quiz.id
     if request.method == 'POST':
         question.delete()
         messages.success(request, "Question deleted successfully.")
-    return redirect('quiz:admin_dashboard')
+    return redirect('quiz:admin_add_question', quiz_id=quiz_id)
 
 @user_passes_test(is_admin)
 def admin_quiz_questions_list(request, quiz_id):
