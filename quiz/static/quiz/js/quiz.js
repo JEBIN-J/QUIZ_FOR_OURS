@@ -233,6 +233,36 @@ document.addEventListener('DOMContentLoaded', function () {
             if (progAns) progAns.style.width = `${answeredPct}%`;
             if (progRev) progRev.style.width = `${reviewPct}%`;
             if (progUnans) progUnans.style.width = `${unansweredPct}%`;
+
+            // Update individual section progress percentages on tabs
+            if (window.sectionsData && validSections.length > 0) {
+                validSections.forEach(sec => {
+                    if (sec.q_indices && sec.q_indices.length > 0) {
+                        let secAnswered = 0;
+                        sec.q_indices.forEach(idx => {
+                            const slide = document.getElementById(`slide-${idx}`);
+                            if (slide && slide.querySelector('input[type="radio"]:checked')) {
+                                secAnswered++;
+                            }
+                        });
+                        const secPct = Math.round((secAnswered / sec.q_indices.length) * 100);
+                        const secProgSpan = document.getElementById(`sec-progress-${sec.id}`);
+                        if (secProgSpan) {
+                            secProgSpan.textContent = `${secPct}%`;
+                            if (secPct >= 75) {
+                                secProgSpan.style.background = 'rgba(16, 185, 129, 0.15)';
+                                secProgSpan.style.color = '#059669';
+                            } else if (secPct > 0) {
+                                secProgSpan.style.background = 'rgba(59, 130, 246, 0.15)';
+                                secProgSpan.style.color = '#2563eb';
+                            } else {
+                                secProgSpan.style.background = 'rgba(0,0,0,0.05)';
+                                secProgSpan.style.color = 'inherit';
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         const optionItems = document.querySelectorAll('.option-item');
@@ -371,14 +401,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         gridBtns.forEach((btn, idx) => {
             btn.addEventListener('click', function () {
-                // Find which section this question belongs to
+                // Disable jumping to questions outside the current section via grid buttons
                 let targetSecIndex = -1;
                 if (validSections.length > 0) {
                     targetSecIndex = validSections.findIndex(s => s.q_indices.includes(idx));
                 }
                 
                 if (targetSecIndex !== -1 && targetSecIndex !== currentSectionIndex) {
-                    activateSection(targetSecIndex, idx);
+                    // Do nothing - user cannot jump to other sections via grid
+                    return;
                 } else {
                     showSlide(idx);
                 }
@@ -391,11 +422,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const isAllMode = modeSelect && modeSelect.value === 'all';
 
                 if (isAllMode) {
-                    if (validSections.length > 0 && currentSectionIndex > 0) {
-                        const targetSecIndex = currentSectionIndex - 1;
-                        const prevIdx = validSections[targetSecIndex].q_indices[0];
-                        activateSection(targetSecIndex, prevIdx);
-                    }
+                    // Previous section navigation is disabled in All mode
+                    return;
                 } else {
                     let prevIdx = currentSlide - 1;
                     if (prevIdx >= 0) {
@@ -404,7 +432,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             targetSecIndex = validSections.findIndex(s => s.q_indices.includes(prevIdx));
                         }
                         if (targetSecIndex !== -1 && targetSecIndex !== currentSectionIndex) {
-                            activateSection(targetSecIndex, prevIdx);
+                            // Prevent going back to a previous section
+                            return;
                         } else {
                             showSlide(prevIdx);
                         }
@@ -420,6 +449,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (isAllMode) {
                     if (validSections.length > 0 && currentSectionIndex < validSections.length - 1) {
+                        if (!isCurrentSectionValid()) {
+                            alert("You must answer at least 75% of the questions in this section before moving to the next one.");
+                            return;
+                        }
                         const targetSecIndex = currentSectionIndex + 1;
                         const nextIdx = validSections[targetSecIndex].q_indices[0];
                         const nextSecTitle = validSections[targetSecIndex].title || validSections[targetSecIndex].name || "next";
@@ -443,6 +476,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             targetSecIndex = validSections.findIndex(s => s.q_indices.includes(nextIdx));
                         }
                         if (targetSecIndex !== -1 && targetSecIndex !== currentSectionIndex) {
+                            if (!isCurrentSectionValid()) {
+                                alert("You must answer at least 75% of the questions in this section before moving to the next one.");
+                                return;
+                            }
                             const nextSecTitle = validSections[targetSecIndex].title || validSections[targetSecIndex].name || "next";
                             showCustomConfirm(
                                 "Section Complete", 
@@ -495,15 +532,30 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.removeItem(`timer_timeLeft_demo_mode`);
         }
 
-        // Setup tab clicking
+        function isCurrentSectionValid() {
+            if (validSections.length === 0) return true;
+            const qIndices = currentSectionQIndices;
+            if (qIndices.length === 0) return true;
+            
+            let answered = 0;
+            qIndices.forEach(idx => {
+                const parentSlide = document.getElementById(`slide-${idx}`);
+                if (parentSlide) {
+                    const checkedRadio = parentSlide.querySelector('input[type="radio"]:checked');
+                    if (checkedRadio) answered++;
+                }
+            });
+            
+            return (answered / qIndices.length) >= 0.75;
+        }
+
+        // Setup tab clicking (Locked for forward-only progression)
         const sectionTabs = document.querySelectorAll('.section-tab-btn');
         sectionTabs.forEach((tab) => {
-            tab.addEventListener('click', function() {
-                const secId = String(this.dataset.secId);
-                const secIndex = validSections.findIndex(s => String(s.id) === secId);
-                if (secIndex !== -1) {
-                    activateSection(secIndex);
-                }
+            tab.style.pointerEvents = 'none'; // Visually disable clicking
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Navigation disabled
             });
         });
         

@@ -449,7 +449,7 @@
                     <div class="preview-question-row" data-section-id="{{ q.section.id|default:'' }}" style="padding: 15px 20px; border-bottom: 1px solid var(--border); background: {% cycle '#ffffff' '#fbfbfb' %};">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div style="font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.4; padding-right: 15px;">
-                                <span style="color: var(--text-muted); margin-right: 5px;">{{ forloop.counter }}.</span>{{ q.text }}
+                                <span style="color: var(--text-muted); margin-right: 5px;">{{ forloop.counter }}.</span>{{ q.text|linebreaksbr }}
                                 {% if q.section %}
                                 <span style="display: inline-block; background: rgba(59, 130, 246, 0.1); color: #2563eb; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: text-bottom; border: 1px solid rgba(59, 130, 246, 0.2);">{{ q.section.title }}</span>
                                 {% else %}
@@ -655,7 +655,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         setTimeout(function() {
-            const alerts = document.querySelectorAll(".alert-msg, .messages li");
+            const alerts = document.querySelectorAll(".alert-msg, .messages li, .msgs li, .alert");
             alerts.forEach(function(msg) {
                 msg.style.transition = "opacity 0.5s ease";
                 msg.style.opacity = "0";

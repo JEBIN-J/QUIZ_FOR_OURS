@@ -3,7 +3,9 @@
 {% block title %}Examination Results{% endblock %}
 
 {% block content %}
-<div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--border-color);">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<div class="glass-card" id="results-analysis-report" style="padding: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--border-color);">
     <!-- Premium Banner Header -->
     <div style="background: {% if attempt.passed %}linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.02)){% else %}linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.02)){% endif %}; padding: 40px 30px; text-align: center; border-bottom: 1px solid {% if attempt.passed %}rgba(16,185,129,0.15){% else %}rgba(239,68,68,0.15){% endif %}; position: relative;">
         
@@ -194,6 +196,8 @@
         </div>
     </details>
 </div>
+</div> <!-- Close results-analysis-report -->
+
 <!-- Actions CTA bar -->
 <div class="glass-card" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; padding: 20px;">
     <a href="{% url 'quiz:play' attempt.quiz.id %}" class="btn btn-primary" id="btn-retry"><i

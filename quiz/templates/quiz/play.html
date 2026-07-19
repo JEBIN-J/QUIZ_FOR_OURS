@@ -178,7 +178,7 @@
     /* Formatter-safe classes */
     .quiz-header-title { font-size: 24px; font-weight: 700; color: var(--text-white); margin-bottom: 5px; }
     .quiz-header-pass { color: var(--text-muted); font-size: 14px; margin: 0; }
-    .question-title-text { margin-bottom: 30px; font-size: 20px; line-height: 1.6; color: var(--text-white); }
+    .question-title-text { margin-bottom: 30px; font-size: 20px; line-height: 1.6; color: var(--text-white); font-weight: 500; }
     .choice-text { font-size: 16px; font-weight: 500; line-height: 1.4; color: var(--text-white); }
     .option-item { display: flex; align-items: center; gap: 15px; padding: 16px 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color); background: transparent; }
     .question-counter-text { color: var(--primary-orange); font-size: 18px; }
@@ -299,11 +299,13 @@
                 {% for sec in quiz.sections.all|dictsort:"order" %}
                 <button type="button" class="section-tab-btn" data-sec-id="{{ sec.id }}" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap;">
                     {{ sec.title }} {% if sec.time_limit %}<span style="font-size:12px; opacity:0.8;">({{ sec.time_limit }}m)</span>{% endif %}
+                    <span class="sec-progress" id="sec-progress-{{ sec.id }}" style="margin-left: 8px; font-size: 11px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 10px;">0%</span>
                 </button>
                 {% endfor %}
                 {% if has_general_questions %}
                 <button type="button" class="section-tab-btn" data-sec-id="general" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap;">
                     General
+                    <span class="sec-progress" id="sec-progress-general" style="margin-left: 8px; font-size: 11px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 10px;">0%</span>
                 </button>
                 {% endif %}
             </div>
@@ -352,7 +354,7 @@
                                 {{ question.points }}</span>
                         </div>
 
-                        <h3 class="question-text question-title-text">{{ question.text }}</h3>
+                        <h3 class="question-text question-title-text">{{ question.text|linebreaksbr }}</h3>
 
                         <div class="options-list" style="display: flex; flex-direction: column; gap: 15px;">
                             {% for choice in question.choices.all %}
