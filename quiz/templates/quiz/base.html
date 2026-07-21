@@ -8,7 +8,7 @@
     <meta name="description"
         content="Engage in top-tier Quiz Competitions. Put your skills to the test in real-time, view detailed metrics, and conquer the leaderboards.">
     <meta name="author" content="QuizCompete">
-    <title>{% block title %}Examination Portal{% endblock %} | FJ Brothers</title>
+    <title>{% block title %}Examination Portal{% endblock %} | FJ Edu Online Exam</title>
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{% static 'quiz/css/style.css' %}?v={% now 'U' %}">
     <!-- FontAwesome for standard icons -->
@@ -60,8 +60,8 @@
     <header>
         <div class="container nav-container">
             <a href="{% url 'quiz:welcome' %}" class="logo-link animated-brand-border" id="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;  border-radius: 12px; padding: 6px 14px; background: #fff;">
-                <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 42px; width: auto; object-fit: contain;">
-                <div style="font-size: 1.45rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;">FJ <span style="color: #ea580c;">Brothers</span></div>
+                <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Edu Online Exam Icon" style="height: 32px; width: auto; object-fit: contain;">
+                <div style="font-size: 1.15rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px;"><span style="color: #6d28d9;">FJ</span> <span style="color: #ea580c;">Edu</span> <span style="color: #111827;">Online Exam</span></div>
             </a>
 
             <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Menu">
@@ -135,7 +135,7 @@
     {% block footer %}
     <footer>
         <div class="container">
-            <p class="footer-text">&copy; 2026 <span>QuizCompete</span>. Built with Django. All Rights Reserved.</p>
+            <p class="footer-text">&copy; 2026 <span>FJ Tech Solution</span>. All Rights Reserved.</p>
         </div>
     </footer>
     {% endblock %}

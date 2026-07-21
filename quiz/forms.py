@@ -7,19 +7,21 @@ from django.contrib.auth.hashers import make_password
 
 class RegistrationForm(forms.ModelForm):
     email = forms.EmailField(required=True, label="Email Address")
+    mobile = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter Mobile Number'}), label="Mobile Number")
     age = forms.IntegerField(required=False, min_value=1, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Enter Age'}), label="Age")
     gender = forms.ChoiceField(required=False, choices=[('', 'Select Gender'), ('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], widget=forms.Select(attrs={'class': 'form-input'}), label="Gender")
     place = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter City/Place'}), label="Place")
+    target_exam = forms.ModelChoiceField(queryset=Category.objects.all(), required=False, empty_label="Select Target Exam", to_field_name="name", widget=forms.Select(attrs={'class': 'form-input'}), label="Target Exam")
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': 'Enter Password'}), label="Password")
     password_confirm = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': 'Confirm Password'}), label="Confirm Password")
 
     class Meta:
         model = UserRegister
-        fields = ['username', 'email', 'age', 'gender', 'place']
+        fields = ['username', 'email', 'mobile', 'target_exam', 'age', 'gender', 'place']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name in ['username', 'email']:
+        for field_name in ['username', 'email', 'mobile']:
             if field_name in self.fields:
                 self.fields[field_name].widget.attrs['class'] = 'form-input'
                 self.fields[field_name].widget.attrs['placeholder'] = f"Enter {self.fields[field_name].label}"

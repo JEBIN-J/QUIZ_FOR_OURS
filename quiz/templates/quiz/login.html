@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In · FJ Brothers</title>
-  <meta name="description" content="Sign in to your FJ Brothers account to access quizzes and track your progress.">
+  <title>Sign In · FJ Edu Online Exam</title>
+  <meta name="description" content="Sign in to your FJ Edu Online Exam account to access quizzes and track your progress.">
   <link rel="stylesheet" href="{% static 'quiz/css/style.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -80,7 +80,7 @@
       text-decoration: none;
     }
     .brand-icon {
-      width: 42px; height: 42px;
+      width: 42px; height: 32px;
       background: linear-gradient(135deg, #FF6B00, #FF9A00);
       border-radius: 12px;
       display: grid; place-items: center;
@@ -298,8 +298,8 @@
 
       <!-- Brand -->
       <a href="{% url 'quiz:welcome' %}" class="brand animated-brand-border" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; padding: 10px 20px; background: #fff; margin-bottom: 30px;">
-        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 42px; width: auto; object-fit: contain;">
-        <div style="font-size: 1.6rem; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin: 0;">FJ <span style="color: #ea580c;">Brothers</span></div>
+        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Edu Online Exam Icon" style="height: 32px; width: auto; object-fit: contain;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin: 0;"><span style="color: #6d28d9;">FJ</span> <span style="color: #ea580c;">Edu</span> <span style="color: #111827;">Online Exam</span></div>
       </a>
 
       <h1 class="auth-heading">Welcome back!</h1>
@@ -344,6 +344,10 @@
               <i class="fa-solid fa-eye" id="eye-icon"></i>
             </button>
           </div>
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 15px;">
+            <a href="{% url 'quiz:forgot_password' %}" style="font-size: 13px; color: #FF6B00; text-decoration: none; font-weight: 600;">Forgot Password?</a>
         </div>
 
         <button type="submit" class="btn-submit" id="btn-submit-login">

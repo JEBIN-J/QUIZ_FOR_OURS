@@ -63,6 +63,9 @@ def welcome(request):
     return render(request, 'quiz/welcome.html', {'stats': stats, 'quizzes': quizzes})
 
 
+import random
+from .models import OTPVerification
+
 def register_view(request):
     if request.session.get('student_id'):
         return redirect('quiz:dashboard')
@@ -70,13 +73,37 @@ def register_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user_reg = form.save()
-            user_reg.current_session_start = timezone.now()
-            user_reg.save()
-            request.session['student_id'] = user_reg.id
-            messages.success(request, f"Welcome, {user_reg.username}!")
-            next_url = request.POST.get('next') or request.GET.get('next')
-            return redirect(next_url if next_url else 'quiz:dashboard')
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            mobile = form.cleaned_data.get('mobile')
+            email = form.cleaned_data.get('email')
+            
+            # Print to console for dev testing
+            print(f"========== OTP FOR {mobile}: {otp} ==========")
+            
+            # Send Email
+            from django.core.mail import send_mail
+            if email:
+                send_mail(
+                    'Your OTP for FJ Edu Online Exam',
+                    f'Your OTP for registration is: {otp}',
+                    'jebin6884@gmail.com',
+                    [email],
+                    fail_silently=True,
+                )
+            
+            # Store in DB
+            OTPVerification.objects.create(mobile_or_email=mobile, otp=otp)
+            
+            # Save form data in session
+            registration_data = form.cleaned_data.copy()
+            if registration_data.get('target_exam'):
+                # Convert Category object to its name string for JSON serialization
+                registration_data['target_exam'] = getattr(registration_data['target_exam'], 'name', str(registration_data['target_exam']))
+            request.session['registration_data'] = registration_data
+            
+            messages.info(request, f"An OTP has been sent to {mobile}. Please enter it below.")
+            return redirect('quiz:verify_otp')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -85,6 +112,111 @@ def register_view(request):
         form = RegistrationForm()
     next_url = request.GET.get('next', '')
     return render(request, 'quiz/register.html', {'form': form, 'next_url': next_url})
+
+def verify_otp_view(request):
+    if request.method == 'POST':
+        otp_entered = request.POST.get('otp')
+        registration_data = request.session.get('registration_data')
+        
+        if not registration_data:
+            messages.error(request, "Session expired. Please register again.")
+            return redirect('quiz:register')
+            
+        mobile = registration_data.get('mobile')
+        
+        # Verify OTP
+        otp_record = OTPVerification.objects.filter(mobile_or_email=mobile, otp=otp_entered, is_verified=False).last()
+        if otp_record:
+            otp_record.is_verified = True
+            otp_record.save()
+            
+            # Create user
+            from django.contrib.auth.hashers import make_password
+            user_reg = UserRegister.objects.create(
+                username=registration_data['username'],
+                email=registration_data['email'],
+                mobile=registration_data['mobile'],
+                target_exam=registration_data.get('target_exam', ''),
+                age=registration_data.get('age'),
+                gender=registration_data.get('gender'),
+                place=registration_data.get('place'),
+                password=make_password(registration_data['password'])
+            )
+            user_reg.current_session_start = timezone.now()
+            user_reg.save()
+            request.session['student_id'] = user_reg.id
+            
+            # Clear session data
+            del request.session['registration_data']
+            
+            messages.success(request, f"Welcome, {user_reg.username}! Registration successful.")
+            return redirect('quiz:dashboard')
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+            
+    return render(request, 'quiz/otp_verification.html')
+
+def forgot_password_view(request):
+    if request.method == 'POST':
+        mobile_or_email = request.POST.get('mobile_or_email')
+        
+        user = UserRegister.objects.filter(models.Q(mobile=mobile_or_email) | models.Q(email=mobile_or_email)).first()
+        if user:
+            otp = str(random.randint(100000, 999999))
+            print(f"========== OTP FOR FORGOT PASSWORD {mobile_or_email}: {otp} ==========")
+            
+            # Send Email
+            from django.core.mail import send_mail
+            recipient = mobile_or_email if '@' in mobile_or_email else user.email
+            if recipient:
+                send_mail(
+                    'Password Reset OTP for FJ Edu Online Exam',
+                    f'Your OTP for password reset is: {otp}',
+                    'jebin6884@gmail.com',
+                    [recipient],
+                    fail_silently=True,
+                )
+            
+            OTPVerification.objects.create(mobile_or_email=mobile_or_email, otp=otp)
+            request.session['reset_identity'] = mobile_or_email
+            messages.info(request, "OTP sent successfully to your registered mobile/email.")
+            return redirect('quiz:reset_password')
+        else:
+            messages.error(request, "No account found with that mobile number or email.")
+            
+    return render(request, 'quiz/forgot_password.html')
+
+def reset_password_view(request):
+    identity = request.session.get('reset_identity')
+    if not identity:
+        messages.error(request, "Session expired. Please try again.")
+        return redirect('quiz:forgot_password')
+        
+    if request.method == 'POST':
+        otp_entered = request.POST.get('otp')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+        else:
+            otp_record = OTPVerification.objects.filter(mobile_or_email=identity, otp=otp_entered, is_verified=False).last()
+            if otp_record:
+                otp_record.is_verified = True
+                otp_record.save()
+                
+                from django.contrib.auth.hashers import make_password
+                user = UserRegister.objects.filter(models.Q(mobile=identity) | models.Q(email=identity)).first()
+                user.password = make_password(new_password)
+                user.save()
+                
+                del request.session['reset_identity']
+                messages.success(request, "Password reset successfully. You can now login.")
+                return redirect('quiz:login')
+            else:
+                messages.error(request, "Invalid OTP.")
+                
+    return render(request, 'quiz/reset_password.html')
 
 
 def login_view(request):
@@ -181,6 +313,12 @@ def dashboard(request):
     categories = Category.objects.all().annotate(
         published_count=Count('quizzes', filter=Q(quizzes__status='Published'))
     )
+
+    if user.target_exam:
+        categories = categories.filter(name=user.target_exam)
+        # Default quiz list to their target exam as well
+        if cat_filter == 'all':
+            quizzes_qs = quizzes_qs.filter(category__name=user.target_exam)
 
     # Build per-category user attempt stats
     category_stats = []

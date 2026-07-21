@@ -31,8 +31,8 @@
     <!-- Title -->
     <div style="text-align: center; margin-bottom: 15px;">
       <div class="animated-brand-border" style="display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px; background: #fff;">
-        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 48px; width: auto; object-fit: contain;">
-        <div style="font-size: 1.8rem; font-weight: 900; color: #111827; letter-spacing: -0.5px;">FJ <span style="color: #ea580c;">Brothers</span></div>
+        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Edu Online Exam Icon" style="height: 48px; width: auto; object-fit: contain;">
+        <div style="font-size: 1.4rem; font-weight: 900; color: #111827; letter-spacing: -0.5px;"><span style="color: #6d28d9;">FJ</span> <span style="color: #ea580c;">Edu</span> <span style="color: #111827;">Online Exam</span></div>
       </div>
     </div>
     <p style="font-size:.9rem;color:rgba(255,255,255,.5);margin-bottom:36px;font-weight:500;text-transform:uppercase;letter-spacing:2px;">
@@ -56,17 +56,17 @@
     <!-- Score / Grade row -->
     <div style="display:flex;justify-content:center;gap:30px;margin-bottom:36px;flex-wrap:wrap;">
       <div style="text-align:center;">
-        <div style="font-size:1.8rem;font-weight:900;color:#f59e0b;">{{ cert.attempt.percentage|floatformat:1 }}%</div>
+        <div style="font-size: 1.4rem;font-weight:900;color:#f59e0b;">{{ cert.attempt.percentage|floatformat:1 }}%</div>
         <div style="font-size:.72rem;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;">Score</div>
       </div>
       <div style="width:1px;background:rgba(255,255,255,.1);"></div>
       <div style="text-align:center;">
-        <div style="font-size:1.8rem;font-weight:900;color:#10b981;">{{ cert.attempt.grade }}</div>
+        <div style="font-size: 1.4rem;font-weight:900;color:#10b981;">{{ cert.attempt.grade }}</div>
         <div style="font-size:.72rem;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;">Grade</div>
       </div>
       <div style="width:1px;background:rgba(255,255,255,.1);"></div>
       <div style="text-align:center;">
-        <div style="font-size:1.8rem;font-weight:900;color:#3b82f6;">{{ cert.attempt.correct_answers }}/{{ cert.attempt.total_questions }}</div>
+        <div style="font-size: 1.4rem;font-weight:900;color:#3b82f6;">{{ cert.attempt.correct_answers }}/{{ cert.attempt.total_questions }}</div>
         <div style="font-size:.72rem;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;">Correct</div>
       </div>
     </div>

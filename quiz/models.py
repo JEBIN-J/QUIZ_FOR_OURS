@@ -215,6 +215,7 @@ class Notification(models.Model):
 class UserRegister(models.Model):
     username = models.CharField(max_length=150)
     email = models.EmailField()
+    mobile = models.CharField(max_length=15, unique=True, null=True, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True)
     place = models.CharField(max_length=255, null=True, blank=True)
@@ -233,6 +234,15 @@ class UserRegister(models.Model):
 
     def __str__(self):
         return self.username
+
+class OTPVerification(models.Model):
+    mobile_or_email = models.CharField(max_length=255)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.mobile_or_email} - {self.otp}"
 
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=255)

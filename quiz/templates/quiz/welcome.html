@@ -1,7 +1,7 @@
 {% extends 'quiz/base.html' %}
 {% load static %}
 
-{% block title %}Welcome to FJ Brothers{% endblock %}
+{% block title %}Welcome to FJ Edu Online Exam{% endblock %}
 
 {% block content %}
 <!-- Custom encapsulated styles for the landing page -->
@@ -131,9 +131,9 @@
 <div class="welcome-hero">
     <!-- Hero Text -->
     <div>
-        <h1 class="hero-title" style="margin-bottom: 20px;">Conduct Professional Timed <span>Examinations</span></h1>
+        <h1 class="hero-title" style="margin-bottom: 20px;">Welcome to FJ Edu Online Exam – <br>Your Affordable Government Exam <span>Preparation Platform</span></h1>
         <p class="hero-subtitle" style="margin-bottom: 35px; max-width: 600px;">
-            FJ Brothers provides secure, responsive, and beautifully styled assessments. Evaluate candidate knowledge, configure strict time constraints, and review selections instantly with customized scoring dashboards.
+            FJ Edu Online Exam provides secure, responsive, and beautifully styled assessments. Evaluate candidate knowledge, configure strict time constraints, and review selections instantly with customized scoring dashboards.
         </p>
         
         <div class="hero-ctas" style="margin-bottom: 40px;">
@@ -142,7 +142,7 @@
                 <a href="{% url 'quiz:dashboard' %}" class="btn btn-secondary"><i class="fa-solid fa-gauge"></i> Examinee Dashboard</a>
             {% else %}
                 <a href="#available-exams" class="btn btn-primary" id="cta-dashboard"><i class="fa-solid fa-file-invoice"></i> Browse Exams</a>
-                <a href="{% url 'quiz:register' %}" class="btn btn-secondary" id="cta-register"><i class="fa-solid fa-user-plus"></i> Join FJ Brothers</a>
+                <a href="{% url 'quiz:register' %}" class="btn btn-secondary" id="cta-register"><i class="fa-solid fa-user-plus"></i> Join FJ Edu Online Exam</a>
             {% endif %}
         </div>
 
@@ -165,7 +165,7 @@
     
     <!-- Hero Image Banner (Newly Generated 3D Mockup) -->
     <div class="hero-img-container">
-        <img src="{% static 'quiz/images/exam_hero.png' %}" alt="FJ Brothers Assessment Illustration" class="hero-img">
+        <img src="{% static 'quiz/images/exam_hero.png' %}" alt="FJ Edu Online Exam Assessment Illustration" class="hero-img">
     </div>
 </div>
 
@@ -212,41 +212,44 @@
     <div>
         <div style="margin-bottom: 25px;">
             <div class="animated-brand-border" style="display: inline-flex; align-items: center; gap: 12px; padding: 8px 16px; background: #fff;">
-                <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 38px; width: auto; object-fit: contain;">
-                <div style="font-size: 1.4rem; font-weight: 900; color: #111827; letter-spacing: -0.5px;">FJ <span style="color: #ea580c;">Brothers</span></div>
+                <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Edu Online Exam Icon" style="height: 38px; width: auto; object-fit: contain;">
+                <div style="font-size: 1.4rem; font-weight: 900; color: #111827; letter-spacing: -0.5px;">FJ <span style="color: #ea580c;">Edu</span> Online Exam</div>
             </div>
         </div>
         <p style="color: var(--text-muted); font-size: 15px; line-height: 1.7; margin-bottom: 20px;">
-            FJ Brothers is a leading digital testing platform founded with the mission to democratize clean, objective, and analytical assessments. We empower academic institutions, training organizations, and independent creators to evaluate candidate readiness with high precision.
+            <strong>FJ Edu Online Exam</strong> is proudly owned and operated by <strong>FJ Tech Solution</strong> and is established in partnership by <strong>Sh. Frutin Raj J</strong> and <strong>Sh. Jebin J</strong>. We are an affordable online learning platform for government exam preparation.
+        </p>
+        <p style="color: var(--text-muted); font-size: 15px; line-height: 1.7; margin-bottom: 20px;">
+            <strong>Our Mission:</strong> To empower every government job aspirant with affordable, high-quality, and technology-driven learning solutions, ensuring that quality education and exam preparation are accessible to everyone, regardless of their financial background.
         </p>
         <p style="color: var(--text-muted); font-size: 15px; line-height: 1.7;">
-            Our core architecture is built upon absolute integrity: candidates are evaluated fairly under rigorous timers, and they are immediately provided with transparent feedback. We believe in visual clarity, performance efficiency, and robust data isolation.
+            <strong>Our Vision:</strong> To become one of India's most trusted and student-centric online examination platforms by delivering innovative learning experiences, accurate practice tests, and continuous academic support.
         </p>
     </div>
     
     <div class="glass-card" style="padding: 30px;">
-        <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--primary-orange);"><i class="fa-solid fa-bullseye"></i> Our Founding Pillars</h4>
+        <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--primary-orange);"><i class="fa-solid fa-graduation-cap"></i> Supported Examinations</h4>
         
         <ul style="list-style: none; display: flex; flex-direction: column; gap: 15px;">
             <li style="display: flex; align-items: flex-start; gap: 12px; font-size: 14px;">
                 <i class="fa-solid fa-circle-check" style="color: var(--success-green); margin-top: 3px;"></i>
                 <div>
-                    <strong>Precision Timing</strong>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">A backend scoring framework combined with zero-lag countdowns to eliminate score disputes.</p>
+                    <strong>SSC Examinations</strong>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">CGL, CHSL, MTS, CPO, GD</p>
                 </div>
             </li>
             <li style="display: flex; align-items: flex-start; gap: 12px; font-size: 14px;">
                 <i class="fa-solid fa-circle-check" style="color: var(--success-green); margin-top: 3px;"></i>
                 <div>
-                    <strong>Actionable Reports</strong>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">Comprehensive reviews highlighting selected choices versus correct keys, assisting learning curves.</p>
+                    <strong>UPSC & Banking</strong>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">CSE, CAPF, IBPS, SBI, RBI</p>
                 </div>
             </li>
             <li style="display: flex; align-items: flex-start; gap: 12px; font-size: 14px;">
                 <i class="fa-solid fa-circle-check" style="color: var(--success-green); margin-top: 3px;"></i>
                 <div>
-                    <strong>Light & Accessible Aesthetics</strong>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">A clean white backdrop matched with orange accents makes scanning items fatigue-free.</p>
+                    <strong>Other Major Exams</strong>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">Railway (RRB), State PSC, Defence (NDA, CDS), Teaching Eligibility Tests</p>
                 </div>
             </li>
         </ul>

@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Account · FJ Brothers</title>
-  <meta name="description" content="Register for a free FJ Brothers account and start practising quizzes today.">
+  <title>Create Account · FJ Edu Online Exam</title>
+  <meta name="description" content="Register for a free FJ Edu Online Exam account and start practising quizzes today.">
   <link rel="stylesheet" href="{% static 'quiz/css/style.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -73,7 +73,7 @@
       margin-bottom: 28px; text-decoration: none;
     }
     .brand-icon {
-      width: 42px; height: 42px;
+      width: 42px; height: 32px;
       background: linear-gradient(135deg, #FF6B00, #FF9A00);
       border-radius: 12px;
       display: grid; place-items: center;
@@ -294,8 +294,8 @@
 
       <!-- Brand -->
       <a href="{% url 'quiz:welcome' %}" class="brand animated-brand-border" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; padding: 10px 20px; background: #fff; margin-bottom: 30px;">
-        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Brothers Icon" style="height: 42px; width: auto; object-fit: contain;">
-        <div style="font-size: 1.6rem; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin: 0;">FJ <span style="color: #ea580c;">Brothers</span></div>
+        <img src="{% static 'quiz/images/logo_icon.png' %}" alt="FJ Edu Online Exam Icon" style="height: 32px; width: auto; object-fit: contain;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin: 0;"><span style="color: #6d28d9;">FJ</span> <span style="color: #ea580c;">Edu</span> <span style="color: #111827;">Online Exam</span></div>
       </a>
 
       <h1 class="auth-heading">Create your account</h1>
@@ -353,6 +353,7 @@
                         aria-label="Toggle visibility">
                   <i class="fa-solid fa-eye"></i>
                 </button>
+            </div>
                 {% if 'password1' in field.html_name or field.html_name == 'password' %}
                 <div class="strength-bar" id="strength-bar">
                   <div class="strength-seg" id="seg1"></div>
@@ -364,8 +365,8 @@
                 {% endif %}
               {% else %}
                 {{ field }}
-              {% endif %}
             </div>
+              {% endif %}
             {% if field.help_text %}
               <div class="field-help">{{ field.help_text }}</div>
             {% endif %}
